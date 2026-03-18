@@ -3,16 +3,17 @@
     <el-table
       :data="dataList"
       @row-dblclick="handleRowDbClick"
+      @row-click="handleRowClick"
+      :row-class-name="tableRowClassName"
       highlight-current-row
     >
       <el-table-column type="index" label="" width="50" align="center" />
-      <el-table-column prop="songName" label="歌曲名" min-width="180" />
-      <el-table-column prop="singerName" label="歌手" min-width="120" />
+      <el-table-column prop="songName" label="歌曲名" min-width="200" />
       <el-table-column prop="introduction" label="专辑" min-width="150" />
       <el-table-column prop="duration" label="时长" width="100" align="center" />
       <el-table-column label="操作" width="120" align="center">
         <template #default="scope">
-          <div class="action-buttons">
+          <div class="action-buttons" v-if="hoveredRowIndex === scope.row.index">
             <el-button
               type="primary"
               size="small"
@@ -69,7 +70,6 @@ import { ElMessage } from "element-plus";
 import { VideoPlay, Plus } from "@element-plus/icons-vue";
 import mixin from "@/mixins/mixin";
 import { HttpManager } from "@/api";
-import { formatSeconds } from "@/utils";
 
 const props = defineProps<{
   songList: any[];
@@ -78,8 +78,11 @@ const props = defineProps<{
 
 const emit = defineEmits(["changeData"]);
 
-const { playMusic, checkStatus, getSongTitle, getSingerName } = mixin();
+const { playMusic, checkStatus } = mixin();
 const store = useStore();
+
+// 悬浮行索引
+const hoveredRowIndex = ref(-1);
 
 // 歌单弹窗
 const showPlaylistDialog = ref(false);
@@ -94,24 +97,31 @@ const userId = computed(() => store.getters.userId);
 const dataList = computed(() => {
   const list: any[] = [];
   props.songList.forEach((item: any, index: number) => {
-    const songName = getSongTitle(item.name); // 歌曲名
-    const singerName = getSingerName(item.name); // 歌手名
-    // 处理时长：接口返回的可能是 duration 或 time 或其他字段
-    let durationStr = "00:00";
-    const durationValue = item.duration ?? item.time ?? 0;
-    if (durationValue && !isNaN(Number(durationValue))) {
-      durationStr = formatSeconds(Number(durationValue));
-    }
+    const songName = item.name?.split("-")[0]?.trim() || item.name || "";
+    const singerName = item.name?.split("-")[1]?.trim() || "";
     list.push({
       ...item,
       songName,
       singerName,
       index,
-      duration: durationStr,
+      duration: item.duration || "00:00",
     });
   });
   return list;
 });
+
+// 鼠标悬浮
+function handleRowClick(row: any) {
+  hoveredRowIndex.value = row.index;
+}
+
+// 移出表格
+function tableRowClassName({ rowIndex }: { rowIndex: number }) {
+  if (rowIndex === hoveredRowIndex.value) {
+    return "hover-row";
+  }
+  return "";
+}
 
 // 双击播放
 function handleRowDbClick(row: any) {
