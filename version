@@ -68,3 +68,11 @@
 		-- 双击歌曲栏 -》播放
 
 歌曲界面参考：https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%2Fid%2FOIP.l4_FdnFqMmrScPn1m4a4tgHaE8%3Fpid%3DApi&f=1&ipt=7b095e9c5cdc1741b72a3d93b6799e57ca3b8ab08f45c3a5705d1311f3158daa&ipo=images
+
+
+############# v0.3.1
+修复bug: 请求音频/图片资源,url 多加一个/
+
+比如：
+http://localhost:9003//song/11.mp3
+http://localhost:9003//img/singerPic/tianfuzhen.jpg
