@@ -73,6 +73,10 @@
 ############# v0.3.1
 修复bug: 请求音频/图片资源,url 多加一个/
 
+############# v0.3.2
+优化: 音乐列表，和播放音乐，和后端联调。后端播放的url 区分优先级
+播放音乐，前端只要传 /song/id 就行，后端自动根据优先级 使用对应url (spider_url -> vultr_url -> aws_url -> nas_url)
+
 比如：
 http://localhost:9003//song/11.mp3
 http://localhost:9003//img/singerPic/tianfuzhen.jpg

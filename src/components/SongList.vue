@@ -8,7 +8,7 @@
       <el-table-column type="index" label="" width="50" align="center" />
       <el-table-column prop="songName" label="歌曲名" min-width="180" />
       <el-table-column prop="singerName" label="歌手" min-width="120" />
-      <el-table-column prop="introduction" label="专辑" min-width="150" />
+      <el-table-column prop="albumName" label="专辑" min-width="150" />
       <el-table-column prop="duration" label="时长" width="100" align="center" />
       <el-table-column label="操作" width="120" align="center">
         <template #default="scope">
@@ -94,8 +94,12 @@ const userId = computed(() => store.getters.userId);
 const dataList = computed(() => {
   const list: any[] = [];
   props.songList.forEach((item: any, index: number) => {
-    const songName = getSongTitle(item.name); // 歌曲名
-    const singerName = getSingerName(item.name); // 歌手名
+    // 歌曲名：直接用 name，去掉 .mp3 等后缀
+    const songName = item.name ? item.name.replace(/\.(mp3|wav|flac|lrc)$/i, "") : "";
+    // 歌手：优先用 full_name_singer，没有则用 singer
+    const singerName = item.full_name_singer || item.singer || "";
+    // 专辑：直接用后端返回的 album 字段
+    const albumName = item.album || "";
     // 处理时长：接口返回的可能是 duration 或 time 或其他字段
     let durationStr = "00:00";
     const durationValue = item.duration ?? item.time ?? 0;
@@ -106,6 +110,7 @@ const dataList = computed(() => {
       ...item,
       songName,
       singerName,
+      albumName,
       index,
       duration: durationStr,
     });
