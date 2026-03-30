@@ -11,6 +11,12 @@
             <li>生日：{{ getBirth(singerInfo.birth) }}</li>
             <li>故乡：{{ singerInfo.location }}</li>
           </ul>
+          <div class="singer-intro" v-if="singerInfo.introduction">
+            <h3>简介</h3>
+            <el-tooltip :content="singerInfo.introduction" placement="top" :disabled="!showTooltip">
+              <p class="intro-text" @mouseenter="checkOverflow">{{ singerInfo.introduction }}</p>
+            </el-tooltip>
+          </div>
         </div>
       </el-aside>
 
@@ -63,6 +69,15 @@ import mixin from "@/mixins/mixin";
 
 const store = useStore();
 const { getUserSex } = mixin();
+
+// 控制 tooltip 是否启用（文本超出时才启用）
+const showTooltip = ref(false);
+
+// 检查文本是否超出
+function checkOverflow(e: MouseEvent) {
+  const el = e.target as HTMLElement;
+  showTooltip.value = el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth;
+}
 
 // 歌手信息
 const singerInfo = computed(() => store.getters.songDetails) as any;
@@ -168,6 +183,30 @@ const attachImageUrl = HttpManager.attachImageUrl;
       height: 30px;
       line-height: 30px;
       color: #666;
+    }
+  }
+
+  .singer-intro {
+    width: 80%;
+    padding-top: 1rem;
+
+    h3 {
+      margin-bottom: 0.5rem;
+      font-size: 16px;
+      color: #333;
+    }
+
+    .intro-text {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.5;
+      max-height: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 6;
+      cursor: default;
     }
   }
 }

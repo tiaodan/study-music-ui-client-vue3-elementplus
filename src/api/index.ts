@@ -4,9 +4,15 @@ const HttpManager = {
   // 获取图片信息
   attachImageUrl: (url) => {
     if (!url) return "https://cube.elemecdn.com/e/fd/0fc7d20532fdaf769a25683617711png.png";
-    // 去掉 url 开头多余的 /，避免双斜杠
-    const cleanUrl = url.replace(/^\/+/, '');
-    return `${getBaseURL()}/${cleanUrl}`;
+    // 去掉 \r\n 等空白字符
+    const cleanUrl = url.trim();
+    // 如果已经是完整 URL，直接返回
+    if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+      return cleanUrl;
+    }
+    // 否则加上后端前缀，去掉开头多余的 /
+    const path = cleanUrl.replace(/^\/+/, '');
+    return `${getBaseURL()}/${path}`;
   },
   // =======================> 用户 API 完成
   // 登录
