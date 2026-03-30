@@ -30,18 +30,32 @@ export default defineComponent({
     const autoNext = computed(() => store.getters.autoNext);
 
     // 监听播放还是暂停
-    watch(isPlay, () => togglePlay());
+    watch(isPlay, () => {
+      if (divRef.value) togglePlay();
+    });
     // 跳到指定时刻播放
-    watch(changeTime, () => (divRef.value.currentTime = changeTime.value));
-    watch(volume, (value) => (divRef.value.volume = value));
+    watch(changeTime, (newTime) => {
+      if (!divRef.value) return;
+      // 设置播放位置，单曲循环时 changeTime=0 会触发从头播放
+      divRef.value.currentTime = newTime;
+      // 如果是从头播放（changeTime=0），同时开始播放
+      if (newTime === 0) {
+        divRef.value.play();
+      }
+    });
+    watch(volume, (value) => {
+      if (divRef.value) divRef.value.volume = value;
+    });
 
     // 开始 / 暂停
     function togglePlay() {
+      if (!divRef.value) return;
       isPlay.value ? divRef.value.play() : divRef.value.pause();
     }
 
     // 获取歌曲链接后准备播放
     function canplay() {
+      if (!divRef.value) return;
       proxy.$store.commit("setDuration", divRef.value.duration);
       // 自动开始播放
       divRef.value.play();
@@ -50,11 +64,13 @@ export default defineComponent({
 
     // 音乐播放时记录音乐的播放位置
     function timeupdate() {
+      if (!divRef.value) return;
       proxy.$store.commit("setCurTime", divRef.value.currentTime);
     }
 
     // 音乐播放结束时触发
     function ended() {
+      if (!divRef.value) return;
       proxy.$store.commit("setIsPlay", false);
       proxy.$store.commit("setCurTime", 0);
       proxy.$store.commit("setAutoNext", !autoNext.value);

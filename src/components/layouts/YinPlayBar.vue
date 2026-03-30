@@ -276,8 +276,13 @@ export default defineComponent({
     },
     // 选中播放
     toPlay(url, force = false) {
-      if (url && (force || url !== this.songUrl)) {
-        const song = this.currentPlayList[this.currentPlayIndex];
+      const song = this.currentPlayList[this.currentPlayIndex];
+      if (force && url === this.songUrl) {
+        // 单曲循环：url 相同，需要重新从头播放
+        this.$store.commit("setChangeTime", 0); // 从头开始
+        this.$store.commit("setIsPlay", true);   // 设置播放状态
+      } else if (url && (force || url !== this.songUrl)) {
+        // 换歌播放
         this.playMusic({
           id: song.id,
           url,
