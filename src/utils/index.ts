@@ -25,6 +25,11 @@ export function formatDate(cellValue) {
 
 // 解析歌词
 export function parseLyric(text) {
+  // 空歌词直接返回空数组
+  if (!text || text.trim() === "") {
+    return [];
+  }
+
   let lines = text.split("\n");
   const pattern = /\[\d{2}:\d{2}.(\d{3}|\d{2})\]/g;
   const result = [];
@@ -42,6 +47,8 @@ export function parseLyric(text) {
   for (const item of lines) {
     const time = item.match(pattern); // 存前面的时间段
     const value = item.replace(pattern, ""); // 存歌词
+    // time 为 null 时跳过
+    if (!time) continue;
     for (const item1 of time) {
       const t = item1.slice(1, -1).split(":");
       if (value !== "") {

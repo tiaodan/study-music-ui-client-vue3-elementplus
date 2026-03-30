@@ -1,4 +1,8 @@
 <template>
+  <!-- 关闭按钮 -->
+  <div class="close-btn" @click="goBack">
+    <el-icon><Close /></el-icon>
+  </div>
   <div class="song-container">
     <el-image class="song-pic" fit="contain" :src="attachImageUrl(songPic)" />
     <ul class="song-info">
@@ -30,6 +34,8 @@
 <script lang="ts">
 import { computed, defineComponent, ref, watch } from "vue";
 import { useStore } from "vuex";
+import { useRouter } from "vue-router";
+import { Close } from "@element-plus/icons-vue";
 import Comment from "@/components/Comment.vue";
 import { parseLyric } from "@/utils";
 import { HttpManager } from "@/api";
@@ -37,9 +43,11 @@ import { HttpManager } from "@/api";
 export default defineComponent({
   components: {
     Comment,
+    Close,
   },
   setup() {
     const store = useStore();
+    const router = useRouter();
 
     const lrcTop = ref("80px"); // 歌词滑动
     const lyricArr = ref([]); // 当前歌曲的歌词
@@ -75,6 +83,11 @@ export default defineComponent({
 
     lyricArr.value = lyric.value ? parseLyric(lyric.value) : [];
 
+    // 返回上一页
+    function goBack() {
+      router.go(-1);
+    }
+
     return {
       songPic,
       singerName,
@@ -83,6 +96,7 @@ export default defineComponent({
       lyricArr,
       songId,
       attachImageUrl: HttpManager.attachImageUrl,
+      goBack,
     };
   },
 });
@@ -90,6 +104,30 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 @import "@/assets/css/var.scss";
+
+.close-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 1000;
+
+  .el-icon {
+    font-size: 24px;
+    color: #fff;
+  }
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.7);
+  }
+}
 
 .song-container {
   position: fixed;
