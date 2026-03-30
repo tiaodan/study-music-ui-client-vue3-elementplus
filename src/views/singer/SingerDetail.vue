@@ -26,11 +26,11 @@
               <div
                 class="album-item"
                 v-for="album in albumList"
-                :key="album.id"
+                :key="album.album_id"
                 @click="handleSelectAlbum(album)"
               >
-                <el-image class="album-cover" fit="contain" :src="attachImageUrl(album.pic)" />
-                <div class="album-name">{{ album.name }}</div>
+                <el-image class="album-cover" fit="contain" :src="attachImageUrl(album.pic || '')" />
+                <div class="album-name">{{ album.album || '未知专辑' }}</div>
               </div>
               <el-empty v-if="albumList.length === 0" description="暂无专辑" />
             </div>
@@ -70,36 +70,59 @@ const singerInfo = computed(() => store.getters.songDetails) as any;
 // Tab
 const activeTab = ref("album");
 
-// 专辑列表（模拟数据，因为后端暂无专辑接口）
-const albumList = ref([
-  { id: 1, name: "专辑一", pic: "" },
-  { id: 2, name: "专辑二", pic: "" },
-  { id: 3, name: "专辑三", pic: "" },
-]);
+// 专辑列表（从接口返回按专辑分组的数据）
+const albumList = ref<any[]>([]);
 
 // 选中的专辑
 const selectedAlbum = ref(null);
 
-// 专辑歌曲列表（模拟数据）
-const albumSongList = ref([]);
+// 专辑歌曲列表
+const albumSongList = ref<any[]>([]);
 
-// 歌手歌曲列表
-const currentSongList = ref([]);
+// 歌手歌曲列表（所有专辑的歌曲合并）
+const currentSongList = ref<any[]>([]);
 
 // 点击选择专辑
 function handleSelectAlbum(album: any) {
   selectedAlbum.value = album;
-  // 模拟：专辑歌曲 = 歌手歌曲
-  albumSongList.value = currentSongList.value;
+  albumSongList.value = album.songs || [];
 }
 
-// 获取歌手歌曲
+// 获取歌手歌曲（按专辑分组）
 async function getSingerSongs() {
   try {
     const result = (await HttpManager.getSongOfSingerId(singerInfo.value.id)) as ResponseBody;
-    currentSongList.value = result.data || [];
+    const data = result.data || [];
+
+    // 兼容两种格式：1. 后端已分组 {album, songs[]}  2. 后端未分组 [歌曲列表]
+    const albumMap = new Map<string, any>();
+    const allSongs: any[] = [];
+
+    data.forEach((item: any) => {
+      // 检查是否是已分组的格式（有songs字段）
+      if (item.songs && Array.isArray(item.songs)) {
+        // 后端已分组
+        if (!albumMap.has(item.album)) {
+          albumMap.set(item.album, { album_id: item.album_id, album: item.album, songs: [] });
+        }
+        albumMap.get(item.album).songs.push(...item.songs);
+        allSongs.push(...item.songs);
+      } else {
+        // 后端未分组，需要前端按album字段分组
+        const albumName = item.album || '未知专辑';
+        if (!albumMap.has(albumName)) {
+          albumMap.set(albumName, { album_id: item.album_id, album: albumName, songs: [] });
+        }
+        albumMap.get(albumName).songs.push(item);
+        allSongs.push(item);
+      }
+    });
+
+    albumList.value = Array.from(albumMap.values());
+    currentSongList.value = allSongs;
   } catch (error) {
     console.error("获取歌手歌曲失败:", error);
+    albumList.value = [];
     currentSongList.value = [];
   }
 }

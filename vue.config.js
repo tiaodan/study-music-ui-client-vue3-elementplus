@@ -11,7 +11,7 @@ module.exports = defineConfig({
     allowedHosts: 'all',       // Vue CLI 4+ 推荐写法（允许所有域名）
     // allowedHosts: ['www.xx.com', '.xx.com', 'localhost'], // 或者只允许指定域名
     client: {
-      overlay: true,  // 关闭错误遮罩层是 false  // 确实好用，为啥之前clade code 自动设置后不行呢？
+      overlay: false,  // 关闭错误遮罩层
     },
   },
   // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←

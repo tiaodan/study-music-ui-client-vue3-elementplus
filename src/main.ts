@@ -20,4 +20,22 @@ declare module "@vue/runtime-core" {
 }
 
 const app = createApp(App);
+
+// 过滤 ResizeObserver 警告（浏览器频繁触发但不影响功能）
+window.addEventListener('error', (event) => {
+  if (event.message && event.message.includes('ResizeObserver')) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+});
+
+// 过滤 console.error 中的 ResizeObserver 警告
+const originalError = console.error;
+console.error = (...args) => {
+  if (args[0] && args[0].toString && args[0].toString().includes('ResizeObserver')) {
+    return;
+  }
+  originalError.apply(console, args);
+};
+
 app.use(store).use(router).use(ElementPlus).mount("#app");
