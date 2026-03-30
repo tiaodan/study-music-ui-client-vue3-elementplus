@@ -120,9 +120,11 @@ const dataList = computed(() => {
 
 // 双击播放
 function handleRowDbClick(row: any) {
+  // 如果 url 为空，用歌曲 id 拼接播放地址
+  const playUrl = row.url || `/song/${row.id}.mp3`;
   playMusic({
     id: row.id,
-    url: row.url,
+    url: playUrl,
     pic: row.pic,
     index: row.index,
     name: row.name,
@@ -133,9 +135,11 @@ function handleRowDbClick(row: any) {
 
 // 点击播放按钮
 function handlePlay(row: any) {
+  // 如果 url 为空，用歌曲 id 拼接播放地址
+  const playUrl = row.url || `/song/${row.id}.mp3`;
   playMusic({
     id: row.id,
-    url: row.url,
+    url: playUrl,
     pic: row.pic,
     index: row.index,
     name: row.name,
