@@ -127,6 +127,7 @@ export default defineComponent({
 @media screen and (min-width: $sm) {
   .card-frame {
     width: 18%;
+    max-width: 150px;
     margin: 0.5rem 1%;
   }
 }
