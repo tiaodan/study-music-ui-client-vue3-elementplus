@@ -179,6 +179,7 @@ export default defineComponent({
       "currentPlayIndex", // 当前歌曲在歌曲列表的位置
       "showAside", // 是否显示侧边栏
       "autoNext", // 用于触发自动播放下一首
+      "playMode", // 播放模式：0=列表循环, 1=单曲循环, 2=随机播放
     ]),
   },
   watch: {
@@ -196,15 +197,14 @@ export default defineComponent({
       // 移动进度条
       this.nowTime = (this.curTime / this.duration) * 100;
     },
-    // 自动播放下一首
+    // 同步 store 的 playMode 到本地 playStateIndex
+    playMode(value) {
+      this.playStateIndex = value;
+      this.playState = this.playStateList[value];
+    },
+    // 自动播放下一首（单曲循环由 audio loop 属性处理，不会触发 ended）
     autoNext() {
-      if (this.playStateIndex === 1) {
-        // 单曲循环（index=1）：强制重新播放当前歌曲
-        this.$store.commit("setIsPlay", true);  // 先设置播放状态
-        this.toPlay(this.currentPlayList[this.currentPlayIndex].url, true);
-      } else {
-        this.next();
-      }
+      this.next();
     },
   },
   methods: {
@@ -221,68 +221,49 @@ export default defineComponent({
     changePlayState() {
       this.playStateIndex = this.playStateIndex >= this.playStateList.length - 1 ? 0 : ++this.playStateIndex;
       this.playState = this.playStateList[this.playStateIndex];
+      // 同步到 store
+      this.$store.commit("setPlayMode", this.playStateIndex);
     },
     // 上一首
     prev() {
-      if (this.playStateIndex === 2) {
+      if (this.playMode === 2) {
         // 乱序
         let playIndex = Math.floor(Math.random() * this.currentPlayList.length);
         playIndex = playIndex === this.currentPlayIndex ? playIndex + 1 : playIndex;
         this.$store.commit("setCurrentPlayIndex", playIndex);
         this.toPlay(this.currentPlayList[playIndex].url);
-      } else if (this.playStateIndex === 1) {
-        // 单曲循环：切换到上一首，继续单曲循环
+      } else {
+        // 列表循环或单曲循环：切换到上一首
         if (this.currentPlayIndex > 0) {
           this.$store.commit("setCurrentPlayIndex", this.currentPlayIndex - 1);
         } else {
           this.$store.commit("setCurrentPlayIndex", this.currentPlayList.length - 1);
         }
-        this.toPlay(this.currentPlayList[this.currentPlayIndex].url, true);
-      } else if (this.currentPlayIndex !== -1 && this.currentPlayList.length > 1) {
-        if (this.currentPlayIndex > 0) {
-          this.$store.commit("setCurrentPlayIndex", this.currentPlayIndex - 1);
-          this.toPlay(this.currentPlayList[this.currentPlayIndex].url);
-        } else {
-          this.$store.commit("setCurrentPlayIndex", this.currentPlayList.length - 1);
-          this.toPlay(this.currentPlayList[this.currentPlayIndex].url);
-        }
+        this.toPlay(this.currentPlayList[this.currentPlayIndex].url);
       }
     },
     // 下一首
     next() {
-      if (this.playStateIndex === 2) {
+      if (this.playMode === 2) {
         // 乱序
         let playIndex = Math.floor(Math.random() * this.currentPlayList.length);
         playIndex = playIndex === this.currentPlayIndex ? playIndex + 1 : playIndex;
         this.$store.commit("setCurrentPlayIndex", playIndex);
         this.toPlay(this.currentPlayList[playIndex].url);
-      } else if (this.playStateIndex === 1) {
-        // 单曲循环：切换到下一首，继续单曲循环
+      } else {
+        // 列表循环或单曲循环：切换到下一首
         if (this.currentPlayIndex < this.currentPlayList.length - 1) {
           this.$store.commit("setCurrentPlayIndex", this.currentPlayIndex + 1);
         } else {
           this.$store.commit("setCurrentPlayIndex", 0);
         }
-        this.toPlay(this.currentPlayList[this.currentPlayIndex].url, true);
-      } else if (this.currentPlayIndex !== -1 && this.currentPlayList.length > 1) {
-        if (this.currentPlayIndex < this.currentPlayList.length - 1) {
-          this.$store.commit("setCurrentPlayIndex", this.currentPlayIndex + 1);
-          this.toPlay(this.currentPlayList[this.currentPlayIndex].url);
-        } else {
-          this.$store.commit("setCurrentPlayIndex", 0);
-          this.toPlay(this.currentPlayList[0].url);
-        }
+        this.toPlay(this.currentPlayList[this.currentPlayIndex].url);
       }
     },
     // 选中播放
-    toPlay(url, force = false) {
-      const song = this.currentPlayList[this.currentPlayIndex];
-      if (force && url === this.songUrl) {
-        // 单曲循环：url 相同，需要重新从头播放
-        this.$store.commit("setChangeTime", 0); // 从头开始
-        this.$store.commit("setIsPlay", true);   // 设置播放状态
-      } else if (url && (force || url !== this.songUrl)) {
-        // 换歌播放
+    toPlay(url) {
+      if (url && url !== this.songUrl) {
+        const song = this.currentPlayList[this.currentPlayIndex];
         this.playMusic({
           id: song.id,
           url,

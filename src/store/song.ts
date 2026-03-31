@@ -18,6 +18,7 @@ export default {
     curTime: 0, // 当前音乐的播放位置
     changeTime: 0, // 指定播放时刻
     autoNext: true, // 用于触发自动播放下一首
+    playMode: 0, // 播放模式：0=列表循环, 1=单曲循环, 2=随机播放
 
     /** 音乐列表信息 */
     currentPlayList: [], // 当前播放列表
@@ -39,6 +40,7 @@ export default {
     curTime: (state) => state.curTime,
     changeTime: (state) => state.changeTime,
     autoNext: (state) => state.autoNext,
+    playMode: (state) => state.playMode,
 
     currentPlayList: (state) => state.currentPlayList,
     songDetails: (state) => state.songDetails,
@@ -62,6 +64,9 @@ export default {
     },
     setAutoNext: (state, autoNext) => {
       state.autoNext = autoNext;
+    },
+    setPlayMode: (state, playMode) => {
+      state.playMode = playMode;
     },
     setLyric: (state, lyric) => {
       state.lyric = lyric;

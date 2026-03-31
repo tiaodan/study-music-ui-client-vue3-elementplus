@@ -1,11 +1,14 @@
 <template>
-  <audio :src="attachImageUrl(songUrl)" controls="controls" :ref="player" preload="true" @canplay="canplay" @timeupdate="timeupdate" @ended="ended">
-    <!--（1）属性：controls，preload（2）事件：canplay，timeupdate，ended（3）方法：play()，pause() -->
-    <!--controls：向用户显示音频控件（播放/暂停/进度条/音量）-->
-    <!--preload：属性规定是否在页面加载后载入音频-->
-    <!--canplay：当音频/视频处于加载过程中时，会发生的事件-->
-    <!--timeupdate：当目前的播放位置已更改时-->
-    <!--ended：当目前的播放列表已结束时-->
+  <audio
+    :src="attachImageUrl(songUrl)"
+    controls="controls"
+    :ref="player"
+    preload="true"
+    @canplay="canplay"
+    @timeupdate="timeupdate"
+    @ended="ended"
+    :loop="playMode === 1"
+  >
   </audio>
 </template>
 
@@ -28,6 +31,7 @@ export default defineComponent({
     const volume = computed(() => store.getters.volume);
     const changeTime = computed(() => store.getters.changeTime);
     const autoNext = computed(() => store.getters.autoNext);
+    const playMode = computed(() => store.getters.playMode); // 0=列表循环, 1=单曲循环, 2=随机
 
     // 监听播放还是暂停
     watch(isPlay, () => {
@@ -36,12 +40,7 @@ export default defineComponent({
     // 跳到指定时刻播放
     watch(changeTime, (newTime) => {
       if (!divRef.value) return;
-      // 设置播放位置，单曲循环时 changeTime=0 会触发从头播放
       divRef.value.currentTime = newTime;
-      // 如果是从头播放（changeTime=0），同时开始播放
-      if (newTime === 0) {
-        divRef.value.play();
-      }
     });
     watch(volume, (value) => {
       if (divRef.value) divRef.value.volume = value;
@@ -68,12 +67,15 @@ export default defineComponent({
       proxy.$store.commit("setCurTime", divRef.value.currentTime);
     }
 
-    // 音乐播放结束时触发
+    // 音乐播放结束时触发（单曲循环时不会触发，因为有 loop 属性）
     function ended() {
       if (!divRef.value) return;
       proxy.$store.commit("setIsPlay", false);
       proxy.$store.commit("setCurTime", 0);
-      proxy.$store.commit("setAutoNext", !autoNext.value);
+      // 只在非单曲循环模式下触发 autoNext
+      if (playMode.value !== 1) {
+        proxy.$store.commit("setAutoNext", !autoNext.value);
+      }
     }
 
     return {
@@ -82,6 +84,7 @@ export default defineComponent({
       canplay,
       timeupdate,
       ended,
+      playMode,
       attachImageUrl: HttpManager.attachImageUrl,
     };
   },
