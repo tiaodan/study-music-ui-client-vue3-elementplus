@@ -51,7 +51,7 @@
             @click="changeCollection"
         ></yin-icon>
         <!--歌曲列表-->
-        <yin-icon :icon="iconList.LIEBIAO" @click="changeAside"></yin-icon>
+        <yin-icon :icon="iconList.LIEBIAO" @click.stop="changeAside"></yin-icon>
       </div>
     </div>
   </div>
