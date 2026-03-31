@@ -3,11 +3,12 @@
     <div class="yin-current-play" v-if="showAside">
       <h2 class="title">当前播放</h2>
       <div class="control">共 {{ (currentPlayList && currentPlayList.length) || 0 }} 首</div>
-      <ul class="menus">
+      <ul class="menus" v-if="currentPlayList && currentPlayList.length > 0">
         <li
           v-for="(item, index) in currentPlayList"
           :class="{ 'is-play': songId === item.id }"
           :key="index"
+          :style="{ color: songId === item.id ? '#000000' : '#333333' }"
           @click="playMusic({
             id: item.id,
             url: item.url,
@@ -17,9 +18,10 @@
             lyric: item.lyric,
             currentSongList: currentPlayList,
           })">
-          {{ getSongTitle(item.name) }}
+          {{ item.name ? getSongTitle(item.name) : '未知歌曲' }}
         </li>
       </ul>
+      <div class="empty-tip" v-else>暂无播放歌曲</div>
     </div>
   </transition>
 </template>

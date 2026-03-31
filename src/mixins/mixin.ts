@@ -25,7 +25,11 @@ export default function () {
 
   // 获取歌曲名
   function getSongTitle(str) {
-    return str.split("-")[1];
+    if (!str) return "未知歌曲";
+    if (str.includes("-")) {
+      return str.split("-")[1];
+    }
+    return str;
   }
 
   // 获取歌手名
