@@ -50,17 +50,6 @@
             :icon="isCollection ? iconList.like : iconList.dislike"
             @click="changeCollection"
         ></yin-icon>
-        <!--下载-->
-        <yin-icon
-            class="yin-play-show"
-            :icon="iconList.download"
-            @click="
-            downloadMusic({
-              songUrl,
-              songName: singerName + '-' + songTitle,
-            })
-          "
-        ></yin-icon>
         <!--歌曲列表-->
         <yin-icon :icon="iconList.LIEBIAO" @click="changeAside"></yin-icon>
       </div>
