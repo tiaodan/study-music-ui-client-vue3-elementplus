@@ -129,6 +129,9 @@ http://localhost:9003//img/singerPic/tianfuzhen.jpg
 播放列表，没有清空，删除按钮 
 播放列表：打开后一直显示，直到点击其它地方空白区域
 
+############### v0.3.3.15
+优化：把接口全换成/capi 开头的，表示client-api
+
 
 
 
@@ -156,10 +159,10 @@ http://localhost:9003//img/singerPic/tianfuzhen.jpg
 20. 播放列表，没有清空，删除按钮                                                             √
 17. 专辑界面，歌曲界面是不是随机显示的？尽量专辑界面不要随机，歌曲也不随机了？用户每次找会麻烦     √
 	- 后端问题，用了order by id 就好了
+18. vue.config.js 里是把什么接口 发到，http://localhost:9003，如果我想在caddy里做配置，如何写？ √
+	- 考虑把接口全换成/capi 开头的
 
 9. 云服务，把 music域名转 配到nginx
-18. vue.config.js 里是把什么接口 发到，http://localhost:9003，如果我想在caddy里做配置，如何写？
-	- 考虑把接口全换成/api 开头的
 19. 处理数据库有问题的内容，我看jay就有 王力宏的
 
 

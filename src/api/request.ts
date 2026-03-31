@@ -5,7 +5,8 @@ const BASE_URL = process.env.NODE_HOST;
 
 axios.defaults.timeout = 5000; // 超时时间设置
 axios.defaults.withCredentials = true; // true允许跨域
-axios.defaults.baseURL = BASE_URL;
+// baseURL：有值时用完整 URL，空时用 '/'（根路径），确保请求是绝对路径 /api/xxx
+axios.defaults.baseURL = BASE_URL || '/';
 // Content-Type 响应头
 axios.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded;charset=UTF-8";
 

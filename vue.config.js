@@ -13,13 +13,27 @@ module.exports = defineConfig({
     client: {
       overlay: false,  // 关闭错误遮罩层
     },
+    // 本地开发代理：/capi/* 转发到后端 9003
+    // 开发 (npm run serve)	/capi/user/login/status	devServer → localhost:9003/user/login/status
+    // 生产 (npm run build)	/capi/user/login/status	Caddy → localhost:9003/user/login/status
+    proxy: {
+      '/capi': {
+        target: 'http://localhost:9003',
+        changeOrigin: true,
+        // 如果后端路由不带 /capi 前缀，用 pathRewrite 去掉
+        pathRewrite: { '^/capi': '' }
+      }
+    }
   },
   // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
 	
   chainWebpack: config => {
     config.plugin('define').tap(definitions => {
       Object.assign(definitions[0]['process.env'], {
-        NODE_HOST: '"http://localhost:9003"',
+        // 开发和生产都用空，请求都是 /capi/* 相对路径
+        // 开发环境：devServer proxy 转发到 9003
+        // 生产环境：Caddy 转发到 9003
+        NODE_HOST: JSON.stringify(''),
       });
       return definitions;
     });
