@@ -23,6 +23,30 @@
     margin-top: -10px;
     left: 0;
     right: 0;
+
+    :deep(.el-slider__runway) {
+      height: 4px;
+      background-color: rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+    }
+
+    :deep(.el-slider__bar) {
+      height: 4px;
+      background-color: $color-blue;
+    }
+
+    :deep(.el-slider__button-wrapper) {
+      // 增大拖动区域
+      width: 24px;
+      height: 24px;
+      top: -10px;
+    }
+
+    :deep(.el-slider__button) {
+      width: 14px;
+      height: 14px;
+      border: 2px solid $color-blue;
+    }
   }
 
   .control-box {
