@@ -102,6 +102,7 @@ export default {
     },
   },
   actions: {
+    // 播放整个列表（原有逻辑，用于上一首/下一首切换）
     playMusic: ({ commit }, { id, url, pic, index, songTitle, singerName, lyric, currentSongList }) => {
       commit("setSongId", id);
       commit("setSongUrl", url);
@@ -111,6 +112,39 @@ export default {
       commit("setSingerName", singerName);
       commit("setLyric", lyric);
       commit("setCurrentPlayList", currentSongList);
+    },
+    // 播放单首歌曲（追加到播放列表）
+    playSingleSong: ({ commit, state }, song) => {
+      const { id, url, pic, songTitle, singerName, lyric } = song;
+
+      // 检查歌曲是否已在播放列表中
+      const existIndex = state.currentPlayList.findIndex(item => item.id === id);
+      let newIndex;
+
+      if (existIndex !== -1) {
+        // 已存在，直接播放
+        newIndex = existIndex;
+      } else {
+        // 不存在，追加到列表末尾
+        const newSong = {
+          id,
+          url,
+          pic,
+          name: singerName + "-" + songTitle,
+          lyric,
+        };
+        const newList = [...state.currentPlayList, newSong];
+        commit("setCurrentPlayList", newList);
+        newIndex = newList.length - 1;
+      }
+
+      commit("setSongId", id);
+      commit("setSongUrl", url);
+      commit("setSongPic", pic);
+      commit("setCurrentPlayIndex", newIndex);
+      commit("setSongTitle", songTitle);
+      commit("setSingerName", singerName);
+      commit("setLyric", lyric);
     },
   },
 };

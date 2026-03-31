@@ -29,39 +29,14 @@
         </template>
       </el-table-column>
     </el-table>
-
-    <!-- 添加到歌单弹窗 -->
-    <el-dialog v-model="showPlaylistDialog" title="添加到歌单" width="400px">
-      <div class="playlist-dialog-content">
-        <el-radio-group v-model="selectedPlaylistId">
-          <el-radio
-            v-for="playlist in userPlaylists"
-            :key="playlist.id"
-            :label="playlist.id"
-            border
-            class="playlist-radio"
-          >
-            {{ playlist.name }}
-          </el-radio>
-        </el-radio-group>
-        <el-empty v-if="userPlaylists.length === 0" description="暂无歌单" />
-      </div>
-      <template #footer>
-        <el-button @click="showPlaylistDialog = false">取消</el-button>
-        <el-button type="primary" @click="confirmAddToPlaylist" :disabled="!selectedPlaylistId">
-          确定
-        </el-button>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed } from "vue";
 import { useStore } from "vuex";
 import { ElMessage } from "element-plus";
 import YinIcon from "@/components/layouts/YinIcon.vue";
-import mixin from "@/mixins/mixin";
 import { HttpManager } from "@/api";
 import { formatSeconds } from "@/utils";
 import { Icon } from "@/enums";
@@ -73,21 +48,11 @@ const props = defineProps<{
 
 const emit = defineEmits(["changeData"]);
 
-const { playMusic, checkStatus, getSongTitle, getSingerName } = mixin();
 const store = useStore();
 
 // 图标
 const BOFANG = Icon.BOFANG;
 const TIANJIA = Icon.TIANJIA;
-
-// 歌单弹窗
-const showPlaylistDialog = ref(false);
-const userPlaylists = ref<Array<{ id: number; name: string }>>([]);
-const selectedPlaylistId = ref<number | null>(null);
-const currentSong = ref<any>(null);
-
-// 用户ID
-const userId = computed(() => store.getters.userId);
 
 // 处理后的歌曲列表
 const dataList = computed(() => {
@@ -121,14 +86,13 @@ const dataList = computed(() => {
 function handleRowDbClick(row: any) {
   // 如果 url 为空，用歌曲 id 拼接播放地址
   const playUrl = row.url || `/song/${row.id}.mp3`;
-  playMusic({
+  store.dispatch("playSingleSong", {
     id: row.id,
     url: playUrl,
     pic: row.pic,
-    index: row.index,
-    name: row.name,
+    songTitle: row.songName,
+    singerName: row.singerName,
     lyric: row.lyric,
-    currentSongList: props.songList,
   });
 }
 
@@ -136,65 +100,38 @@ function handleRowDbClick(row: any) {
 function handlePlay(row: any) {
   // 如果 url 为空，用歌曲 id 拼接播放地址
   const playUrl = row.url || `/song/${row.id}.mp3`;
-  playMusic({
+  store.dispatch("playSingleSong", {
     id: row.id,
     url: playUrl,
     pic: row.pic,
-    index: row.index,
-    name: row.name,
+    songTitle: row.songName,
+    singerName: row.singerName,
     lyric: row.lyric,
-    currentSongList: props.songList,
   });
 }
 
-// 点击添加按钮
+// 点击添加按钮（添加到播放列表末尾）
 function handleAddToPlaylist(row: any) {
-  if (!checkStatus()) return;
-  currentSong.value = row;
-  selectedPlaylistId.value = null;
-  fetchUserPlaylists();
-  showPlaylistDialog.value = true;
-}
+  const playUrl = row.url || `/song/${row.id}.mp3`;
+  const currentPlayList = store.getters.currentPlayList;
 
-// 获取用户歌单列表
-async function fetchUserPlaylists() {
-  try {
-    const result = (await HttpManager.getCollectionOfUser(userId.value)) as ResponseBody;
-    if (result.data) {
-      // 简化：收藏列表也作为歌单展示
-      userPlaylists.value = result.data.map((item: any) => ({
-        id: item.songListId || item.id,
-        name: item.name || "默认歌单",
-      }));
-    }
-  } catch (error) {
-    console.error("获取歌单失败:", error);
-  }
-}
-
-// 确认添加到歌单
-async function confirmAddToPlaylist() {
-  if (!selectedPlaylistId.value || !currentSong.value) {
-    ElMessage.warning("请选择歌单");
+  // 检查是否已存在
+  const existIndex = currentPlayList.findIndex(item => item.id === row.id);
+  if (existIndex !== -1) {
+    ElMessage.info("歌曲已在播放列表中");
     return;
   }
 
-  try {
-    const result = (await HttpManager.setCollection({
-      userId: userId.value,
-      type: 0, // 歌曲
-      songId: currentSong.value.id,
-    })) as ResponseBody;
-
-    if (result.success) {
-      ElMessage.success("添加成功");
-      showPlaylistDialog.value = false;
-    } else {
-      ElMessage.error(result.message || "添加失败");
-    }
-  } catch (error) {
-    ElMessage.error("添加失败");
-  }
+  // 追加到播放列表
+  const newSong = {
+    id: row.id,
+    url: playUrl,
+    pic: row.pic,
+    name: row.singerName + "-" + row.songName,
+    lyric: row.lyric,
+  };
+  store.commit("setCurrentPlayList", [...currentPlayList, newSong]);
+  ElMessage.success("已添加到播放列表");
 }
 </script>
 
@@ -232,14 +169,6 @@ async function confirmAddToPlaylist() {
         color: #409eff;
       }
     }
-  }
-}
-
-.playlist-dialog-content {
-  .playlist-radio {
-    display: block;
-    margin-bottom: 10px;
-    width: 100%;
   }
 }
 </style>
