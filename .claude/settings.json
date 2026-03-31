@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(grep -o \"icon-[a-zA-Z0-9-]*add[a-zA-Z0-9-]*\" src/assets/icons/iconfont*.js)"
     ]
   }
 }

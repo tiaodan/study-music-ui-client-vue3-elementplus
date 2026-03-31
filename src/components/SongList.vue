@@ -10,27 +10,21 @@
       <el-table-column prop="singerName" label="歌手" min-width="120" />
       <el-table-column prop="albumName" label="专辑" min-width="150" />
       <el-table-column prop="duration" label="时长" width="100" align="center" />
-      <el-table-column label="操作" width="120" align="center">
+      <el-table-column label="操作" width="100" align="center">
         <template #default="scope">
           <div class="action-buttons">
-            <el-button
-              type="primary"
-              size="small"
-              circle
+            <yin-icon
+              class="action-icon"
+              :icon="BOFANG"
               @click.stop="handlePlay(scope.row)"
               title="播放"
-            >
-              <el-icon><VideoPlay /></el-icon>
-            </el-button>
-            <el-button
-              type="success"
-              size="small"
-              circle
+            ></yin-icon>
+            <yin-icon
+              class="action-icon add-icon"
+              :icon="TIANJIA"
               @click.stop="handleAddToPlaylist(scope.row)"
               title="添加到歌单"
-            >
-              <el-icon><Plus /></el-icon>
-            </el-button>
+            ></yin-icon>
           </div>
         </template>
       </el-table-column>
@@ -66,10 +60,11 @@
 import { ref, computed, onMounted } from "vue";
 import { useStore } from "vuex";
 import { ElMessage } from "element-plus";
-import { VideoPlay, Plus } from "@element-plus/icons-vue";
+import YinIcon from "@/components/layouts/YinIcon.vue";
 import mixin from "@/mixins/mixin";
 import { HttpManager } from "@/api";
 import { formatSeconds } from "@/utils";
+import { Icon } from "@/enums";
 
 const props = defineProps<{
   songList: any[];
@@ -80,6 +75,10 @@ const emit = defineEmits(["changeData"]);
 
 const { playMusic, checkStatus, getSongTitle, getSingerName } = mixin();
 const store = useStore();
+
+// 图标
+const BOFANG = Icon.BOFANG;
+const TIANJIA = Icon.TIANJIA;
 
 // 歌单弹窗
 const showPlaylistDialog = ref(false);
@@ -218,7 +217,21 @@ async function confirmAddToPlaylist() {
   .action-buttons {
     display: flex;
     justify-content: center;
-    gap: 8px;
+    align-items: center;
+    gap: 16px;
+
+    .action-icon {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      color: #666;
+      transition: all 0.2s;
+
+      &:hover {
+        transform: scale(1.2);
+        color: #409eff;
+      }
+    }
   }
 }
 

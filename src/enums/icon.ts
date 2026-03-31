@@ -17,4 +17,5 @@ export const enum Icon {
   XUNHUAN = "#icon-xunhuan", // 列表循环
   LUANXU = "#icon-xunhuan1", // 乱序
   DANQU = "#icon-danquxunhuan", // 单曲循环
+  TIANJIA = "#icon-tianjia", // 添加
 }
