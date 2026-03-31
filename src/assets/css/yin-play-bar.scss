@@ -5,8 +5,11 @@
   position: fixed;
   z-index: 100;
   bottom: 0;
-  width: 100%;
+  left: 20px;
+  right: 20px;
+  width: calc(100% - 40px);
   transition: all 0.5s;
+  border-radius: 8px 8px 0 0;
 
   .fold {
     position: absolute;
@@ -18,6 +21,8 @@
   .progress {
     position: absolute;
     margin-top: -10px;
+    left: 0;
+    right: 0;
   }
 
   .control-box {
@@ -27,6 +32,7 @@
     height: $play-bar-height;
     width: 100%;
     background-color: $theme-play-bar-color;
+    border-radius: 8px 8px 0 0;
 
     .song-ctr {
       position: relative;
