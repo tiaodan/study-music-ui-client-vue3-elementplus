@@ -7,10 +7,11 @@
     <el-slider class="progress" v-model="nowTime" @change="changeTime" size="small"></el-slider>
     <div class="control-box">
       <div class="info-box">
-        <!--歌曲图片-->
-      <div @click="goPlayerPage">
-         <el-image class="song-bar-img" fit="contain" :src="attachImageUrl(songPic)" />
-      </div>
+        <!--歌曲图片/歌词按钮-->
+        <div @click="goPlayerPage">
+          <el-image v-if="songId" class="song-bar-img" fit="contain" :src="attachImageUrl(songPic)" />
+          <div v-else class="lyric-btn">歌词</div>
+        </div>
         <!--播放开始结束时间-->
         <div v-if="songId">
           <div class="song-info">{{ this.songTitle }} - {{ this.singerName }}</div>

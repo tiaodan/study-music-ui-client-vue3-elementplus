@@ -91,6 +91,24 @@
         margin-right: 10px;
         cursor: pointer;
       }
+      .lyric-btn {
+        width: calc($play-bar-height - 15px);
+        height: calc($play-bar-height - 15px);
+        border-radius: 4px;
+        margin-right: 10px;
+        background-color: $color-blue;
+        color: #fff;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s;
+
+        &:hover {
+          background-color: darken($color-blue, 10%);
+        }
+      }
       .song-info {
         font-size: 14px;
       }
