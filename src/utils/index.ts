@@ -30,6 +30,11 @@ export function parseLyric(text) {
     return [];
   }
 
+  // 如果歌词字段是无效值（如 "Field"、字段名等），返回空数组
+  if (text === "Field" || text.length < 10 || !text.includes("[")) {
+    return [];
+  }
+
   let lines = text.split("\n");
   const pattern = /\[\d{2}:\d{2}.(\d{3}|\d{2})\]/g;
   const result = [];

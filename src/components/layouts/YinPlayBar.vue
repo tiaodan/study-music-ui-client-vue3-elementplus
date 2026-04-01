@@ -9,7 +9,7 @@
       <div class="info-box">
         <!--歌曲图片-->
       <div @click="goPlayerPage">
-         <el-image class="song-bar-img" fit="contain"/>
+         <el-image class="song-bar-img" fit="contain" :src="attachImageUrl(songPic)" />
       </div>
         <!--播放开始结束时间-->
         <div v-if="songId">
@@ -269,6 +269,10 @@ export default defineComponent({
       }
     },
     goPlayerPage() {
+      if (!this.songId) {
+        (this as any).$message.warning("请先播放歌曲");
+        return;
+      }
       this.routerManager(RouterName.Lyric, {path: `${RouterName.Lyric}/${this.songId}`});
     },
   },

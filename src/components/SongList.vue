@@ -112,7 +112,7 @@ function handlePlay(row: any) {
 
 // 点击添加按钮（添加到播放列表末尾）
 function handleAddToPlaylist(row: any) {
-  const playUrl = `/capi/song/${row.id}.mp3`;
+  const playUrl = `/capi/song/${row.id}`;
   const currentPlayList = store.getters.currentPlayList;
 
   // 检查是否已存在
