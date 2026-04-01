@@ -84,8 +84,8 @@ const dataList = computed(() => {
 
 // 双击播放
 function handleRowDbClick(row: any) {
-  // 如果 url 为空，用歌曲 id 拼接播放地址
-  const playUrl = row.url || `/song/${row.id}.mp3`;
+  // 统一使用 /capi/song/ 前缀
+  const playUrl = `/capi/song/${row.id}`;
   store.dispatch("playSingleSong", {
     id: row.id,
     url: playUrl,
@@ -98,8 +98,8 @@ function handleRowDbClick(row: any) {
 
 // 点击播放按钮
 function handlePlay(row: any) {
-  // 如果 url 为空，用歌曲 id 拼接播放地址
-  const playUrl = row.url || `/song/${row.id}.mp3`;
+  // 统一使用 /capi/song/ 前缀
+  const playUrl = `/capi/song/${row.id}`;
   store.dispatch("playSingleSong", {
     id: row.id,
     url: playUrl,
@@ -112,7 +112,7 @@ function handlePlay(row: any) {
 
 // 点击添加按钮（添加到播放列表末尾）
 function handleAddToPlaylist(row: any) {
-  const playUrl = row.url || `/song/${row.id}.mp3`;
+  const playUrl = `/capi/song/${row.id}.mp3`;
   const currentPlayList = store.getters.currentPlayList;
 
   // 检查是否已存在

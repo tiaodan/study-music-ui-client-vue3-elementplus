@@ -1,6 +1,6 @@
 <template>
   <audio
-    :src="attachImageUrl(songUrl)"
+    :src="songUrl"
     controls="controls"
     :ref="player"
     preload="true"
@@ -15,7 +15,6 @@
 <script lang="ts">
 import { defineComponent, ref, getCurrentInstance, computed, watch } from "vue";
 import { useStore } from "vuex";
-import { HttpManager } from "@/api";
 
 export default defineComponent({
   setup() {
@@ -32,6 +31,13 @@ export default defineComponent({
     const changeTime = computed(() => store.getters.changeTime);
     const autoNext = computed(() => store.getters.autoNext);
     const playMode = computed(() => store.getters.playMode); // 0=列表循环, 1=单曲循环, 2=随机
+
+    // 监听歌曲 URL 变化，开始加载
+    watch(songUrl, () => {
+      if (songUrl.value) {
+        proxy.$store.commit("setIsLoading", true);
+      }
+    });
 
     // 监听播放还是暂停
     watch(isPlay, () => {
@@ -56,6 +62,8 @@ export default defineComponent({
     function canplay() {
       if (!divRef.value) return;
       proxy.$store.commit("setDuration", divRef.value.duration);
+      // 加载完成，关闭加载提示
+      proxy.$store.commit("setIsLoading", false);
       // 自动开始播放
       divRef.value.play();
       proxy.$store.commit("setIsPlay", true);
@@ -85,7 +93,6 @@ export default defineComponent({
       timeupdate,
       ended,
       playMode,
-      attachImageUrl: HttpManager.attachImageUrl,
     };
   },
 });

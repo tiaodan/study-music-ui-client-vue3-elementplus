@@ -50,6 +50,7 @@
   }
 
   .control-box {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -62,11 +63,24 @@
       position: relative;
       margin: auto;
       flex-wrap: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
 
       svg {
         width: 5rem;
         cursor: pointer;
       }
+    }
+
+    .loading-tip {
+      position: absolute;
+      left: calc(32% - 50px);
+      color: #999;
+      font-size: 12px;
+      white-space: nowrap;
+      animation: pulse 1.5s infinite;
+      z-index: 10;
     }
 
     .info-box {
@@ -90,6 +104,15 @@
       width: 30%;
       justify-content: flex-end;
     }
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
   }
 }
 
@@ -137,6 +160,10 @@
   }
 
   .yin-play-show {
+    display: none;
+  }
+
+  .loading-tip {
     display: none;
   }
 }

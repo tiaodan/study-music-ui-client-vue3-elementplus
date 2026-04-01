@@ -27,12 +27,26 @@ import YinAudio from "@/components/layouts/YinAudio.vue";
 
 const { proxy } = getCurrentInstance();
 
-if (sessionStorage.getItem("dataStore")) {
-  proxy.$store.replaceState(Object.assign({}, proxy.$store.state, JSON.parse(sessionStorage.getItem("dataStore"))));
+// 恢复状态，添加错误处理
+try {
+  const savedState = sessionStorage.getItem("dataStore");
+  if (savedState) {
+    const parsedState = JSON.parse(savedState);
+    proxy.$store.replaceState(Object.assign({}, proxy.$store.state, parsedState));
+  }
+} catch (error) {
+  console.error("恢复状态失败:", error);
+  // 清除损坏的数据
+  sessionStorage.removeItem("dataStore");
 }
 
+// 保存状态
 window.addEventListener("beforeunload", () => {
-  sessionStorage.setItem("dataStore", JSON.stringify(proxy.$store.state));
+  try {
+    sessionStorage.setItem("dataStore", JSON.stringify(proxy.$store.state));
+  } catch (error) {
+    console.error("保存状态失败:", error);
+  }
 });
 </script>
 

@@ -45,9 +45,11 @@ export default defineComponent({
 
     // 播放指定歌曲
     function playSong(item: any, index: number) {
+      // 统一使用 /capi/song/ 前缀
+      const playUrl = `/capi/song/${item.id}`;
       store.dispatch("playMusic", {
         id: item.id,
-        url: item.url,
+        url: playUrl,
         pic: item.pic,
         index: index,
         songTitle: getSongTitle(item.name),

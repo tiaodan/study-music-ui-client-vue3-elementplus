@@ -60,7 +60,15 @@ export default defineComponent({
     const singerName = computed(() => store.getters.singerName); // 歌手名
     const songPic = computed(() => store.getters.songPic); // 歌曲图片
     watch(songId, () => {
-      lyricArr.value = parseLyric(currentPlayList.value[currentPlayIndex.value].lyric);
+      // 安全访问歌词
+      if (currentPlayList.value && currentPlayList.value.length > 0 && currentPlayIndex.value >= 0) {
+        const song = currentPlayList.value[currentPlayIndex.value];
+        if (song && song.lyric) {
+          lyricArr.value = parseLyric(song.lyric);
+        } else {
+          lyricArr.value = [];
+        }
+      }
     });
     // 处理歌词位置及颜色
     watch(curTime, () => {

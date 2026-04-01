@@ -1,5 +1,5 @@
 <template>
-  <div class="singer-detail-container">
+  <div class="singer-detail-container" v-if="singerInfo">
     <el-container>
       <!-- 左侧歌手信息 -->
       <el-aside class="singer-slide">
@@ -57,17 +57,24 @@
       </el-main>
     </el-container>
   </div>
+  <!-- 加载中状态 -->
+  <div class="loading-container" v-else>
+    <el-empty description="加载中..." />
+  </div>
 </template>
 
 <script lang="ts" setup>
 import { ref, computed, onMounted } from "vue";
 import { useStore } from "vuex";
+import { useRoute, useRouter } from "vue-router";
 import SongList from "@/components/SongList.vue";
 import { HttpManager } from "@/api";
 import { getBirth } from "@/utils";
 import mixin from "@/mixins/mixin";
 
 const store = useStore();
+const route = useRoute();
+const router = useRouter();
 const { getUserSex } = mixin();
 
 // 控制 tooltip 是否启用（文本超出时才启用）
@@ -103,8 +110,33 @@ function handleSelectAlbum(album: any) {
   albumSongList.value = album.songs || [];
 }
 
+// 获取歌手信息（刷新页面时从 API 获取）
+async function fetchSingerInfo() {
+  const singerId = route.params.id as string;
+  if (!singerId) {
+    router.push("/singer");
+    return;
+  }
+
+  try {
+    const result = (await HttpManager.getAllSinger()) as ResponseBody;
+    const singers = result.data || [];
+    const singer = singers.find((s: any) => s.id === parseInt(singerId));
+    if (singer) {
+      store.commit("setSongDetails", singer);
+    } else {
+      router.push("/singer");
+    }
+  } catch (error) {
+    console.error("获取歌手信息失败:", error);
+    router.push("/singer");
+  }
+}
+
 // 获取歌手歌曲（按专辑分组）
 async function getSingerSongs() {
+  if (!singerInfo.value?.id) return;
+
   try {
     const result = (await HttpManager.getSongOfSingerId(singerInfo.value.id)) as ResponseBody;
     const data = result.data || [];
@@ -142,7 +174,12 @@ async function getSingerSongs() {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  // 如果 store 中没有歌手信息，从 API 获取
+  if (!singerInfo.value) {
+    await fetchSingerInfo();
+  }
+  // 获取歌手歌曲
   getSingerSongs();
 });
 
@@ -271,5 +308,12 @@ const attachImageUrl = HttpManager.attachImageUrl;
   .singer-main {
     padding-right: 0;
   }
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
 }
 </style>

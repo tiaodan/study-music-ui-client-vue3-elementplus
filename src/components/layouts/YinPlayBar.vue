@@ -17,6 +17,8 @@
           <div class="time-info">{{ startTime }} / {{ endTime }}</div>
         </div>
       </div>
+      <!-- 加载提示 - 在歌曲名和控制按钮之间 -->
+      <div class="loading-tip" v-if="isLoading">资源加载中...</div>
       <div class="song-ctr">
         <yin-icon
           class="yin-play-show"
@@ -169,6 +171,7 @@ export default defineComponent({
       "showAside", // 是否显示侧边栏
       "autoNext", // 用于触发自动播放下一首
       "playMode", // 播放模式：0=列表循环, 1=单曲循环, 2=随机播放
+      "isLoading", // 音乐加载中
     ]),
   },
   watch: {
@@ -220,7 +223,6 @@ export default defineComponent({
         let playIndex = Math.floor(Math.random() * this.currentPlayList.length);
         playIndex = playIndex === this.currentPlayIndex ? playIndex + 1 : playIndex;
         this.$store.commit("setCurrentPlayIndex", playIndex);
-        this.toPlay(this.currentPlayList[playIndex].url);
       } else {
         // 列表循环或单曲循环：切换到上一首
         if (this.currentPlayIndex > 0) {
@@ -228,8 +230,8 @@ export default defineComponent({
         } else {
           this.$store.commit("setCurrentPlayIndex", this.currentPlayList.length - 1);
         }
-        this.toPlay(this.currentPlayList[this.currentPlayIndex].url);
       }
+      this.toPlay();
     },
     // 下一首
     next() {
@@ -238,7 +240,6 @@ export default defineComponent({
         let playIndex = Math.floor(Math.random() * this.currentPlayList.length);
         playIndex = playIndex === this.currentPlayIndex ? playIndex + 1 : playIndex;
         this.$store.commit("setCurrentPlayIndex", playIndex);
-        this.toPlay(this.currentPlayList[playIndex].url);
       } else {
         // 列表循环或单曲循环：切换到下一首
         if (this.currentPlayIndex < this.currentPlayList.length - 1) {
@@ -246,16 +247,19 @@ export default defineComponent({
         } else {
           this.$store.commit("setCurrentPlayIndex", 0);
         }
-        this.toPlay(this.currentPlayList[this.currentPlayIndex].url);
       }
+      this.toPlay();
     },
     // 选中播放
-    toPlay(url) {
-      if (url && url !== this.songUrl) {
-        const song = this.currentPlayList[this.currentPlayIndex];
+    toPlay() {
+      const song = this.currentPlayList[this.currentPlayIndex];
+      if (!song) return;
+      // 统一使用 /capi/song/ 前缀
+      const playUrl = `/capi/song/${song.id}`;
+      if (playUrl !== this.songUrl) {
         this.playMusic({
           id: song.id,
-          url,
+          url: playUrl,
           pic: song.pic,
           index: this.currentPlayIndex,
           name: song.name,
