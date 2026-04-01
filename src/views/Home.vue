@@ -1,6 +1,10 @@
 <template>
-  没想好放什么
-  
+  <div class="home-container">
+    <!-- 广告位 -->
+    <div class="ad-container">
+      <div id="propeller-ad-banner"></div>
+    </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -31,7 +35,27 @@ try {
 
   onMounted(() => {
     changeIndex(NavName.Home);
+    // 加载 PropellerAds 广告
+    loadPropellerAds();
   });
+
+// 加载 PropellerAds 广告脚本
+const loadPropellerAds = () => {
+  // TODO: 替换为你的 PropellerAds Zone ID（注册后在广告位设置中获取）
+  const ZONE_ID = 'YOUR_ZONE_ID'; // 例如: '1234567'
+
+  if (ZONE_ID === 'YOUR_ZONE_ID') {
+    console.log('请先配置 PropellerAds Zone ID');
+    return;
+  }
+
+  const script = document.createElement('script');
+  script.src = 'https://propellerads.com/scripts/ad.js';
+  script.setAttribute('data-zone', ZONE_ID);
+  script.setAttribute('data-banner', 'banner');
+  script.async = true;
+  document.getElementById('propeller-ad-banner')?.appendChild(script);
+}
 } catch (error) {
   console.error(error);
 }
@@ -39,6 +63,23 @@ try {
 
 <style lang="scss" scoped>
 @import "@/assets/css/var.scss";
+
+.home-container {
+  width: 90%;
+  margin: auto;
+  padding-top: 20px;
+}
+
+.ad-container {
+  width: 100%;
+  min-height: 250px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
 
 /*轮播图*/
 .swiper-container {

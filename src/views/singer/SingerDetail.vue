@@ -28,7 +28,12 @@
         <el-tabs v-model="activeTab" class="singer-tabs">
           <!-- 专辑Tab -->
           <el-tab-pane label="专辑" name="album">
-            <div v-if="!selectedAlbum" class="album-list">
+            <!-- 加载动画 -->
+            <div class="loading-container" v-if="albumLoading">
+              <div class="loading-spinner"></div>
+              <span class="loading-text">加载中...</span>
+            </div>
+            <div v-else-if="!selectedAlbum" class="album-list">
               <div
                 class="album-item"
                 v-for="album in albumList"
@@ -95,6 +100,9 @@ const activeTab = ref("album");
 // 专辑列表（从接口返回按专辑分组的数据）
 const albumList = ref<any[]>([]);
 
+// 专辑加载状态
+const albumLoading = ref(true);
+
 // 选中的专辑
 const selectedAlbum = ref(null);
 
@@ -137,6 +145,7 @@ async function fetchSingerInfo() {
 async function getSingerSongs() {
   if (!singerInfo.value?.id) return;
 
+  albumLoading.value = true;
   try {
     const result = (await HttpManager.getSongOfSingerId(singerInfo.value.id)) as ResponseBody;
     const data = result.data || [];
@@ -171,6 +180,8 @@ async function getSingerSongs() {
     console.error("获取歌手歌曲失败:", error);
     albumList.value = [];
     currentSongList.value = [];
+  } finally {
+    albumLoading.value = false;
   }
 }
 
@@ -312,8 +323,32 @@ const attachImageUrl = HttpManager.attachImageUrl;
 
 .loading-container {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  min-height: 400px;
+  min-height: 300px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid $color-blue;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+  margin-top: 10px;
+  color: #666;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>
