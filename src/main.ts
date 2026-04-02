@@ -39,3 +39,6 @@ console.error = (...args) => {
 };
 
 app.use(store).use(router).use(ElementPlus).mount("#app");
+
+// SEO 预渲染：触发渲染完成事件
+document.dispatchEvent(new Event('render-event'));

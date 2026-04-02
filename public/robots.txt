@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://music.j88d.com/sitemap.xml

@@ -1,8 +1,11 @@
 const { defineConfig } = require('@vue/cli-service')
+const path = require('path')
+const PrerenderSPAPlugin = require('prerender-spa-plugin')
+
 module.exports = defineConfig({
   transpileDependencies: true,
-	
-	// ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+
+  // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
   // 这里才是控制 devServer 的地方！！
   devServer: {
     //host: '127.0.0.1',           // 关键！允许外部访问0.0.0.0（包括 Caddy）
@@ -26,7 +29,7 @@ module.exports = defineConfig({
     }
   },
   // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
-	
+
   chainWebpack: config => {
     config.plugin('define').tap(definitions => {
       Object.assign(definitions[0]['process.env'], {
@@ -37,5 +40,19 @@ module.exports = defineConfig({
       });
       return definitions;
     });
+  },
+
+  // SEO 预渲染
+  configureWebpack: {
+    plugins: [
+      new PrerenderSPAPlugin({
+        staticDir: path.join(__dirname, 'dist'),
+        routes: ['/', '/singer', '/search'],
+        renderer: new PrerenderSPAPlugin.PuppeteerRenderer({
+          renderAfterDocumentEvent: 'render-event',
+          headless: true,
+        }),
+      }),
+    ],
   },
 })
