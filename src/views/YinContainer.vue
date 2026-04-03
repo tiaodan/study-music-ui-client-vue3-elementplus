@@ -27,9 +27,11 @@ import YinAudio from "@/components/layouts/YinAudio.vue";
 
 const { proxy } = getCurrentInstance();
 
-// 恢复状态，添加错误处理
+const STORAGE_KEY = "music_player_state"; // localStorage key
+
+// 恢复状态（从 localStorage 永久缓存）
 try {
-  const savedState = sessionStorage.getItem("dataStore");
+  const savedState = localStorage.getItem(STORAGE_KEY);
   if (savedState) {
     const parsedState = JSON.parse(savedState);
     proxy.$store.replaceState(Object.assign({}, proxy.$store.state, parsedState));
@@ -37,13 +39,13 @@ try {
 } catch (error) {
   console.error("恢复状态失败:", error);
   // 清除损坏的数据
-  sessionStorage.removeItem("dataStore");
+  localStorage.removeItem(STORAGE_KEY);
 }
 
-// 保存状态
+// 保存状态（永久缓存到 localStorage）
 window.addEventListener("beforeunload", () => {
   try {
-    sessionStorage.setItem("dataStore", JSON.stringify(proxy.$store.state));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(proxy.$store.state));
   } catch (error) {
     console.error("保存状态失败:", error);
   }
