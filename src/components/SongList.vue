@@ -98,14 +98,18 @@ async function handleRowDbClick(row: any) {
   // 缓存歌词
   await cacheLyric(row.id, row.lyric);
 
-  store.dispatch("playSingleSong", {
-    id: row.id,
-    url: playUrl,
-    pic: row.pic,
-    songTitle: row.songName,
-    singerName: row.singerName,
-    lyric: row.lyric,
-  });
+  try {
+    store.dispatch("playSingleSong", {
+      id: row.id,
+      url: playUrl,
+      pic: row.pic,
+      songTitle: row.songName,
+      singerName: row.singerName,
+      lyric: row.lyric,
+    });
+  } catch (e: any) {
+    ElMessage.warning(e.message || "播放列表已满");
+  }
 }
 
 // 点击播放按钮
@@ -116,14 +120,18 @@ async function handlePlay(row: any) {
   // 缓存歌词
   await cacheLyric(row.id, row.lyric);
 
-  store.dispatch("playSingleSong", {
-    id: row.id,
-    url: playUrl,
-    pic: row.pic,
-    songTitle: row.songName,
-    singerName: row.singerName,
-    lyric: row.lyric,
-  });
+  try {
+    store.dispatch("playSingleSong", {
+      id: row.id,
+      url: playUrl,
+      pic: row.pic,
+      songTitle: row.songName,
+      singerName: row.singerName,
+      lyric: row.lyric,
+    });
+  } catch (e: any) {
+    ElMessage.warning(e.message || "播放列表已满");
+  }
 }
 
 // 点击添加按钮（添加到播放列表末尾）
@@ -135,6 +143,12 @@ async function handleAddToPlaylist(row: any) {
   const existIndex = currentPlayList.findIndex(item => item.id === row.id);
   if (existIndex !== -1) {
     ElMessage.info("歌曲已在播放列表中");
+    return;
+  }
+
+  // 检查播放列表是否已满（100首上限）
+  if (currentPlayList.length >= 100) {
+    ElMessage.warning("播放列表已达上限（100首），请先删除部分歌曲");
     return;
   }
 

@@ -1,5 +1,8 @@
 import { Icon } from "@/enums";
 
+// 播放列表最大容量
+const MAX_PLAYLIST_SIZE = 100;
+
 export default {
   state: {
     /** 音乐信息 */
@@ -124,25 +127,37 @@ export default {
 
       // 检查歌曲是否已在播放列表中
       const existIndex = state.currentPlayList.findIndex(item => item.id === id);
-      let newIndex;
 
       if (existIndex !== -1) {
         // 已存在，直接播放
-        newIndex = existIndex;
-      } else {
-        // 不存在，追加到列表末尾
-        const newSong = {
-          id,
-          url,
-          pic,
-          name: singerName + "-" + songTitle,
-          lyric,
-        };
-        const newList = [...state.currentPlayList, newSong];
-        commit("setCurrentPlayList", newList);
-        newIndex = newList.length - 1;
+        commit("setSongId", id);
+        commit("setSongUrl", url);
+        commit("setSongPic", pic);
+        commit("setCurrentPlayIndex", existIndex);
+        commit("setSongTitle", songTitle);
+        commit("setSingerName", singerName);
+        commit("setLyric", lyric);
+        return;
       }
 
+      // 检查播放列表是否已满
+      if (state.currentPlayList.length >= MAX_PLAYLIST_SIZE) {
+        // 返回错误信息，由调用方提示用户
+        throw new Error(`播放列表已达上限（${MAX_PLAYLIST_SIZE}首），请先删除部分歌曲`);
+      }
+
+      // 追加到列表末尾
+      const newSong = {
+        id,
+        url,
+        pic,
+        name: singerName + "-" + songTitle,
+        lyric,
+      };
+      const newList = [...state.currentPlayList, newSong];
+      const newIndex = newList.length - 1;
+
+      commit("setCurrentPlayList", newList);
       commit("setSongId", id);
       commit("setSongUrl", url);
       commit("setSongPic", pic);
