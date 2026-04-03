@@ -23,6 +23,8 @@ import YinHeaderNav from "./YinHeaderNav.vue";
 import mixin from "@/mixins/mixin";
 import { HEADERNAVLIST, SIGNLIST, MENULIST, Icon, MUSICNAME, RouterName, NavName } from "@/enums";
 import { HttpManager } from "@/api";
+import { CACHE_CONFIG } from "@/config/cache.config";
+import adConfig from "@/config/ad.config.json";
 
 export default defineComponent({
   components: {
@@ -51,9 +53,36 @@ export default defineComponent({
         changeIndex(NavName.Home);
         routerManager(RouterName.Home, { path: RouterName.Home });
       } else {
+        // 广告弹窗逻辑：点击"歌手"时，24小时内只弹1次
+        if (adConfig.enabled && name === NavName.Singer) {
+          tryShowAdPopup();
+        }
         changeIndex(name);
         routerManager(path, { path });
       }
+    }
+
+    /**
+     * 尝试显示广告弹窗
+     * 24小时内只弹1次
+     */
+    function tryShowAdPopup() {
+      const cacheKey = CACHE_CONFIG.AD_POPUP.key;
+      const cached = localStorage.getItem(cacheKey);
+
+      if (cached) {
+        const lastPopTime = parseInt(cached, 10);
+        const now = Date.now();
+        // 24小时内已弹出，不再弹
+        if (now - lastPopTime < CACHE_CONFIG.AD_POPUP.expire) {
+          return;
+        }
+      }
+
+      // 弹出广告（新标签页）
+      window.open(adConfig.adurl, '_blank');
+      // 记录弹出时间
+      localStorage.setItem(cacheKey, String(Date.now()));
     }
 
     function goMenuList(path) {

@@ -39,4 +39,10 @@ export const CACHE_CONFIG = {
     key: 'cache_lyric',
     expire: -1, // -1 表示永久缓存
   },
+
+  // 广告弹窗缓存（24小时只弹1次）
+  AD_POPUP: {
+    key: 'cache_ad_popup',
+    expire: 24 * 60 * 60 * 1000, // 24小时
+  },
 }
