@@ -6,7 +6,15 @@ export const CACHE_CONFIG = {
   // 歌手列表缓存
   SINGER_LIST: {
     key: 'cache_singer_list',
-    expire: 24 * 60 * 60 * 1000, // 1天
+    expire: 1 * 60 * 60 * 1000,  // 1小时过期（缩短，配合计数器）
+    refreshCount: 40,            // 或点击40次更新（先到先触发）
+  },
+
+  // Banner列表缓存
+  BANNER_LIST: {
+    key: 'cache_banner_list',
+    expire: 6 * 60 * 60 * 1000,  // 6小时过期
+    refreshCount: 100,           // 或点击100次更新（先到先触发）
   },
 
   // 歌手详情缓存

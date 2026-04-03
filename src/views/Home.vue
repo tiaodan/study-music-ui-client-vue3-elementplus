@@ -66,6 +66,7 @@ import PlayList from "@/components/PlayList.vue";
 import { NavName } from "@/enums";
 import { HttpManager } from "@/api";
 import mixin from "@/mixins/mixin";
+import { getSingerList, getBannerList } from "@/utils/cache";
 
 const router = useRouter();
 const songList = ref<any[]>([]);
@@ -95,9 +96,9 @@ onMounted(async () => {
 
   // 获取Banner列表
   try {
-    const bannerRes = await HttpManager.getBannerList() as any;
-    if (bannerRes.success && bannerRes.data?.length) {
-      bannerList.value = bannerRes.data;
+    const banners = await getBannerList();
+    if (banners.length) {
+      bannerList.value = banners;
     }
   } catch (e) {
     console.error('获取Banner失败:', e);
@@ -115,9 +116,9 @@ onMounted(async () => {
 
   // 获取歌手列表
   try {
-    const singerRes = await HttpManager.getAllSinger() as any;
-    if (singerRes.success && singerRes.data) {
-      singerList.value = singerRes.data.slice(0, 10);
+    const singers = await getSingerList();
+    if (singers.length) {
+      singerList.value = singers.slice(0, 10);
     }
   } catch (e) {
     console.error('获取歌手失败:', e);

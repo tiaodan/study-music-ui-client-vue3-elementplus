@@ -63,6 +63,7 @@
 import { ref, computed, onMounted } from "vue";
 import PlayList from "@/components/PlayList.vue";
 import { HttpManager } from "@/api";
+import { getSingerList as getSingerListCache } from "@/utils/cache";
 
 // 筛选条件
 const area = ref(""); // 地区：全部、内地、港台
@@ -94,10 +95,10 @@ function handleFilterChange() {
 // 获取歌手列表
 async function getSingerList() {
   try {
-    // 如果地区、性别、字母都为空或-1，调用原接口
+    // 如果地区、性别、字母都为空或-1，调用缓存函数
     if ((!area.value || area.value === "-1") && sex.value === "-1" && !initial.value) {
-      const result = (await HttpManager.getAllSinger()) as ResponseBody;
-      allPlayList.value = result.data || [];
+      const singers = await getSingerListCache();
+      allPlayList.value = singers || [];
       return;
     }
 
@@ -120,10 +121,10 @@ async function getSingerList() {
 // 测试按钮：调用原接口
 async function handleOriginalApi() {
   try {
-    // 性别为-1或空时调用getAllSinger，否则调用getSingerOfSex
+    // 性别为-1或空时使用缓存函数，否则调用getSingerOfSex
     if (sex.value === "-1" || !sex.value) {
-      const result = (await HttpManager.getAllSinger()) as ResponseBody;
-      allPlayList.value = result.data || [];
+      const singers = await getSingerListCache();
+      allPlayList.value = singers || [];
     } else {
       const result = (await HttpManager.getSingerOfSex(sex.value)) as ResponseBody;
       allPlayList.value = result.data || [];

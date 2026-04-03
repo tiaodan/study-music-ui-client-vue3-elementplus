@@ -208,18 +208,96 @@ import { HttpManager } from '@/api'
 
 /**
  * 获取歌手列表(带缓存)
+ * 缓存策略：时间 + 计数器（任一满足就后台更新）
+ * 1. 无缓存 → 发请求
+ * 2. 缓存过期 → 返回旧缓存 + 后台更新
+ * 3. 点击计数达到阈值 → 返回旧缓存 + 后台更新
  */
 export async function getSingerList(): Promise<any[]> {
   const cacheKey = CACHE_CONFIG.SINGER_LIST.key
-  const cached = getCache<any[]>(cacheKey)
-  if (cached) return cached
+  const cached = getCacheWithMeta<any[]>(cacheKey)
+  const config = CACHE_CONFIG.SINGER_LIST
+  const refreshCount = config.refreshCount || 10
 
-  const result = await HttpManager.getAllSinger() as any
-  if (result.success && result.data) {
-    setCache(cacheKey, result.data, CACHE_CONFIG.SINGER_LIST.expire)
-    return result.data
+  // 无缓存，直接请求
+  if (!cached) {
+    const result = await HttpManager.getAllSinger() as any
+    if (result.success && result.data) {
+      setCacheWithCount(cacheKey, result.data, config.expire, 1)
+      return result.data
+    }
+    return []
   }
-  return []
+
+  const now = Date.now()
+  const isExpired = now > cached.expireTime
+  const currentCount = (cached.clickCount || 0) + 1
+  const shouldRefresh = isExpired || currentCount >= refreshCount
+
+  // 需要更新：后台静默更新（先返回旧缓存）
+  if (shouldRefresh) {
+    // 重置计数器
+    setCacheWithCount(cacheKey, cached.data, config.expire, 0)
+
+    // 后台请求更新（不阻塞返回）
+    HttpManager.getAllSinger().then((result: any) => {
+      if (result.success && result.data) {
+        setCacheWithCount(cacheKey, result.data, config.expire, 0)
+      }
+    }).catch(e => console.warn('歌手列表后台更新失败:', e))
+  } else {
+    // 更新计数器
+    setCacheWithCount(cacheKey, cached.data, config.expire, currentCount)
+  }
+
+  return cached.data
+}
+
+/**
+ * 获取Banner列表(带缓存)
+ * 缓存策略：时间 + 计数器（任一满足就后台更新）
+ * 1. 无缓存 → 发请求
+ * 2. 缓存过期 → 返回旧缓存 + 后台更新
+ * 3. 点击计数达到阈值 → 返回旧缓存 + 后台更新
+ */
+export async function getBannerList(): Promise<any[]> {
+  const cacheKey = CACHE_CONFIG.BANNER_LIST.key
+  const cached = getCacheWithMeta<any[]>(cacheKey)
+  const config = CACHE_CONFIG.BANNER_LIST
+  const refreshCount = config.refreshCount || 100
+
+  // 无缓存，直接请求
+  if (!cached) {
+    const result = await HttpManager.getBannerList() as any
+    if (result.success && result.data) {
+      setCacheWithCount(cacheKey, result.data, config.expire, 1)
+      return result.data
+    }
+    return []
+  }
+
+  const now = Date.now()
+  const isExpired = now > cached.expireTime
+  const currentCount = (cached.clickCount || 0) + 1
+  const shouldRefresh = isExpired || currentCount >= refreshCount
+
+  // 需要更新：后台静默更新（先返回旧缓存）
+  if (shouldRefresh) {
+    // 重置计数器
+    setCacheWithCount(cacheKey, cached.data, config.expire, 0)
+
+    // 后台请求更新（不阻塞返回）
+    HttpManager.getBannerList().then((result: any) => {
+      if (result.success && result.data) {
+        setCacheWithCount(cacheKey, result.data, config.expire, 0)
+      }
+    }).catch(e => console.warn('Banner列表后台更新失败:', e))
+  } else {
+    // 更新计数器
+    setCacheWithCount(cacheKey, cached.data, config.expire, currentCount)
+  }
+
+  return cached.data
 }
 
 /**
