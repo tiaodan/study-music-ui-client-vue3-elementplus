@@ -3,7 +3,20 @@
     "allow": [
       "Bash(npm run:*)",
       "Bash(grep -o \"icon-[a-zA-Z0-9-]*add[a-zA-Z0-9-]*\" src/assets/icons/iconfont*.js)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(curl -s \"http://localhost:9001/capi/song/singer/detail?singerId=46\")",
+      "Bash(curl -s \"http://localhost:9001/capi/song/album/detail?albumId=46\")",
+      "Bash(node -e \"const data=require\\('/tmp/album_detail.json'\\); console.log\\('歌曲数量:', data.data.length\\); console.log\\('歌曲列表:', data.data.map\\(s => s.name\\)\\);\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const data=JSON.parse\\(d\\);console.log\\('歌曲数量:', data.data.length\\); data.data.slice\\(0,5\\).forEach\\(s => console.log\\('-', s.name\\)\\);}\\)\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const data=JSON.parse\\(d\\); const song=data.data[0]; console.log\\('字段:', Object.keys\\(song\\).join\\(', '\\)\\); console.log\\('album字段:', song.album\\);}\\)\")",
+      "Bash(curl -s \"http://localhost:9001/capi/singer/albums?singerId=46\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const data=JSON.parse\\(d\\); console.log\\('专辑数量:', data.data.length\\); if\\(data.data[0]\\) console.log\\('第一个专辑:', JSON.stringify\\(data.data[0], null, 2\\)\\);}\\)\")",
+      "Bash(curl -s \"http://localhost:9001/capi/song/album/detail?albumId=119\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const data=JSON.parse\\(d\\); console.log\\('歌曲数量:', data.data.length\\); data.data.slice\\(0,3\\).forEach\\(s => console.log\\('-', s.name, '| 歌手:', s.full_name_singer || s.singer || '\\(空\\)', '| 专辑:', s.album\\)\\);}\\)\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const data=JSON.parse\\(d\\); const album46=data.data.find\\(a=>a.id===46\\); if\\(album46\\) console.log\\('找到专辑ID=46:', JSON.stringify\\(album46, null, 2\\)\\); else console.log\\('没有专辑ID=46，专辑ID列表:', data.data.map\\(a=>a.id\\).join\\(', '\\)\\);}\\)\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const data=JSON.parse\\(d\\); const song=data.data[0]; console.log\\('full_name_singer:', song.full_name_singer\\); console.log\\('singer:', song.singer\\);}\\)\")",
+      "Bash(curl -s \"http://localhost:9001/capi/song/album/detail?albumId=118\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const data=JSON.parse\\(d\\); data.data.forEach\\(s => console.log\\(s.name, '| full_name_singer:', s.full_name_singer, '| singer:', s.singer\\)\\);}\\)\")"
     ],
     "additionalDirectories": [
       "C:\\Users\\ancha\\.claude\\projects\\c--A-software-C-wokspace-project-music-study-music-ui-client-vue3-elementplus"

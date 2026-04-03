@@ -165,7 +165,12 @@ async function handleSelectAlbum(album: any) {
     const albumDetail = await getAlbumDetail(albumId);
     if (albumDetail) {
       // API返回的data直接就是歌曲数组
-      albumSongList.value = Array.isArray(albumDetail) ? albumDetail : (albumDetail.songs || []);
+      const songs = Array.isArray(albumDetail) ? albumDetail : (albumDetail.songs || []);
+      // 补充歌手信息：如果歌曲歌手字段为空，使用当前歌手名
+      albumSongList.value = songs.map((song: any) => ({
+        ...song,
+        full_name_singer: song.full_name_singer || song.singer || singerInfo.value?.name || '',
+      }));
     } else {
       albumSongList.value = [];
     }

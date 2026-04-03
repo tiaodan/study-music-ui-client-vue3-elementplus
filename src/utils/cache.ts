@@ -339,6 +339,7 @@ export async function getAlbumDetail(albumId: number): Promise<any> {
 
 /**
  * 获取歌手所有歌曲(带缓存)
+ * 接口返回格式：[{album_id, album, songs: [...]}]，需要扁平化
  */
 export async function getSingerSongs(singerId: number): Promise<any[]> {
   const cacheKey = `${CACHE_CONFIG.SONG_LIST.key}_${singerId}`
@@ -347,9 +348,23 @@ export async function getSingerSongs(singerId: number): Promise<any[]> {
 
   const result = await HttpManager.getSongOfSingerId(singerId) as any
   if (result.success && result.data) {
+    // 扁平化：将专辑分组结构转换为歌曲数组
+    const flatSongs: any[] = []
+    result.data.forEach((albumItem: any) => {
+      if (albumItem.songs && Array.isArray(albumItem.songs)) {
+        albumItem.songs.forEach((song: any) => {
+          // 补充专辑信息到每首歌
+          flatSongs.push({
+            ...song,
+            album: albumItem.album || song.album || '',
+            album_id: albumItem.album_id || song.album_id,
+          })
+        })
+      }
+    })
     // 永久缓存歌曲列表
-    setCache(cacheKey, result.data, CACHE_CONFIG.SONG_LIST.expire)
-    return result.data
+    setCache(cacheKey, flatSongs, CACHE_CONFIG.SONG_LIST.expire)
+    return flatSongs
   }
   return []
 }
