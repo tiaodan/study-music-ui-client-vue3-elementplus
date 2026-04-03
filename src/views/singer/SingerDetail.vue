@@ -3,7 +3,15 @@
     <el-container>
       <!-- 左侧歌手信息 -->
       <el-aside class="singer-slide">
-        <el-image class="singer-img" fit="contain" :src="attachImageUrl(singerInfo.pic)" />
+        <el-image class="singer-img" fit="contain" :src="attachImageUrl(singerInfo.pic)" lazy>
+          <template #error>
+            <div class="singer-img-placeholder">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="80" height="80">
+                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+              </svg>
+            </div>
+          </template>
+        </el-image>
         <div class="singer-info">
           <h2>基本资料</h2>
           <ul>
@@ -40,7 +48,15 @@
                 :key="album.album_id"
                 @click="handleSelectAlbum(album)"
               >
-                <el-image class="album-cover" fit="contain" :src="attachImageUrl(album.pic || '')" />
+                <el-image class="album-cover" fit="contain" :src="attachImageUrl(album.pic)" lazy>
+                <template #error>
+                  <div class="album-cover-placeholder">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
+                      <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                    </svg>
+                  </div>
+                </template>
+              </el-image>
                 <div class="album-name">{{ album.album || '未知专辑' }}</div>
               </div>
               <el-empty v-if="albumList.length === 0" description="暂无专辑" />
@@ -50,13 +66,22 @@
               <div class="back-to-album" @click="selectedAlbum = null">
                 <el-button type="primary" size="small">返回专辑列表</el-button>
               </div>
-              <song-list :songList="albumSongList"></song-list>
+              <!-- 专辑详情加载状态 -->
+              <div class="loading-container" v-if="albumDetailLoading">
+                <div class="loading-spinner"></div>
+                <span class="loading-text">加载中...</span>
+              </div>
+              <song-list v-else :songList="albumSongList"></song-list>
             </div>
           </el-tab-pane>
 
           <!-- 歌曲Tab -->
           <el-tab-pane label="歌曲" name="song">
-            <song-list :songList="currentSongList"></song-list>
+            <div class="loading-container" v-if="songLoading">
+              <div class="loading-spinner"></div>
+              <span class="loading-text">加载中...</span>
+            </div>
+            <song-list v-else :songList="currentSongList"></song-list>
           </el-tab-pane>
         </el-tabs>
       </el-main>
@@ -69,13 +94,19 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useStore } from "vuex";
 import { useRoute, useRouter } from "vue-router";
 import SongList from "@/components/SongList.vue";
 import { HttpManager } from "@/api";
 import { getBirth } from "@/utils";
 import mixin from "@/mixins/mixin";
+import {
+  getSingerDetail,
+  getSingerAlbums,
+  getAlbumDetail,
+  getSingerSongs
+} from "@/utils/cache";
 
 const store = useStore();
 const route = useRoute();
@@ -92,33 +123,57 @@ function checkOverflow(e: MouseEvent) {
 }
 
 // 歌手信息
-const singerInfo = computed(() => store.getters.songDetails) as any;
+const singerInfo = ref<any>(null);
 
 // Tab
 const activeTab = ref("album");
 
-// 专辑列表（从接口返回按专辑分组的数据）
+// 专辑列表
 const albumList = ref<any[]>([]);
 
 // 专辑加载状态
-const albumLoading = ref(true);
+const albumLoading = ref(false);
+
+// 歌曲加载状态
+const songLoading = ref(false);
 
 // 选中的专辑
-const selectedAlbum = ref(null);
+const selectedAlbum = ref<any>(null);
 
 // 专辑歌曲列表
 const albumSongList = ref<any[]>([]);
 
-// 歌手歌曲列表（所有专辑的歌曲合并）
+// 专辑详情加载状态
+const albumDetailLoading = ref(false);
+
+// 歌手歌曲列表（所有歌曲）
 const currentSongList = ref<any[]>([]);
 
-// 点击选择专辑
-function handleSelectAlbum(album: any) {
+// 是否已加载歌曲数据
+const songsDataLoaded = ref(false);
+
+// 点击选择专辑 - 加载专辑歌曲
+async function handleSelectAlbum(album: any) {
   selectedAlbum.value = album;
-  albumSongList.value = album.songs || [];
+  albumDetailLoading.value = true;
+
+  try {
+    // 从缓存或API获取专辑详情
+    const albumDetail = await getAlbumDetail(album.album_id);
+    if (albumDetail) {
+      albumSongList.value = albumDetail.songs || [];
+    } else {
+      albumSongList.value = [];
+    }
+  } catch (error) {
+    console.error("获取专辑详情失败:", error);
+    albumSongList.value = [];
+  } finally {
+    albumDetailLoading.value = false;
+  }
 }
 
-// 获取歌手信息（刷新页面时从 API 获取）
+// 获取歌手信息
 async function fetchSingerInfo() {
   const singerId = route.params.id as string;
   if (!singerId) {
@@ -127,10 +182,17 @@ async function fetchSingerInfo() {
   }
 
   try {
-    const result = (await HttpManager.getAllSinger()) as ResponseBody;
-    const singers = result.data || [];
-    const singer = singers.find((s: any) => s.id === parseInt(singerId));
+    // 先从 store 获取
+    const storeSinger = store.getters.songDetails;
+    if (storeSinger && storeSinger.id === parseInt(singerId)) {
+      singerInfo.value = storeSinger;
+      return;
+    }
+
+    // 从缓存或API获取
+    const singer = await getSingerDetail(parseInt(singerId));
     if (singer) {
+      singerInfo.value = singer;
       store.commit("setSongDetails", singer);
     } else {
       router.push("/singer");
@@ -141,57 +203,48 @@ async function fetchSingerInfo() {
   }
 }
 
-// 获取歌手歌曲（按专辑分组）
-async function getSingerSongs() {
+// 加载专辑列表
+async function loadAlbumList() {
   if (!singerInfo.value?.id) return;
 
   albumLoading.value = true;
   try {
-    const result = (await HttpManager.getSongOfSingerId(singerInfo.value.id)) as ResponseBody;
-    const data = result.data || [];
-
-    // 兼容两种格式：1. 后端已分组 {album, songs[]}  2. 后端未分组 [歌曲列表]
-    const albumMap = new Map<string, any>();
-    const allSongs: any[] = [];
-
-    data.forEach((item: any) => {
-      // 检查是否是已分组的格式（有songs字段）
-      if (item.songs && Array.isArray(item.songs)) {
-        // 后端已分组
-        if (!albumMap.has(item.album)) {
-          albumMap.set(item.album, { album_id: item.album_id, album: item.album, songs: [] });
-        }
-        albumMap.get(item.album).songs.push(...item.songs);
-        allSongs.push(...item.songs);
-      } else {
-        // 后端未分组，需要前端按album字段分组
-        const albumName = item.album || '未知专辑';
-        if (!albumMap.has(albumName)) {
-          albumMap.set(albumName, { album_id: item.album_id, album: albumName, songs: [] });
-        }
-        albumMap.get(albumName).songs.push(item);
-        allSongs.push(item);
-      }
-    });
-
-    albumList.value = Array.from(albumMap.values());
-    currentSongList.value = allSongs;
+    albumList.value = await getSingerAlbums(singerInfo.value.id);
   } catch (error) {
-    console.error("获取歌手歌曲失败:", error);
+    console.error("获取专辑列表失败:", error);
     albumList.value = [];
-    currentSongList.value = [];
   } finally {
     albumLoading.value = false;
   }
 }
 
-onMounted(async () => {
-  // 如果 store 中没有歌手信息，从 API 获取
-  if (!singerInfo.value) {
-    await fetchSingerInfo();
+// 加载歌手所有歌曲（歌曲tab）
+async function loadSongList() {
+  if (!singerInfo.value?.id || songsDataLoaded.value) return;
+
+  songLoading.value = true;
+  try {
+    currentSongList.value = await getSingerSongs(singerInfo.value.id);
+    songsDataLoaded.value = true;
+  } catch (error) {
+    console.error("获取歌曲列表失败:", error);
+    currentSongList.value = [];
+  } finally {
+    songLoading.value = false;
   }
-  // 获取歌手歌曲
-  getSingerSongs();
+}
+
+// Tab切换时按需加载
+watch(activeTab, (newTab) => {
+  if (newTab === "song") {
+    loadSongList();
+  }
+});
+
+onMounted(async () => {
+  await fetchSingerInfo();
+  // 进入页面自动加载专辑列表
+  loadAlbumList();
 });
 
 const attachImageUrl = HttpManager.attachImageUrl;
@@ -215,6 +268,21 @@ const attachImageUrl = HttpManager.attachImageUrl;
     width: 250px;
     height: 250px;
     border-radius: 10%;
+
+    .singer-img-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #f093fb 0%, #f5af19 100%);
+      border-radius: 10%;
+      color: rgba(255,255,255,0.9);
+
+      svg {
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+      }
+    }
   }
 
   .singer-info {
@@ -288,6 +356,21 @@ const attachImageUrl = HttpManager.attachImageUrl;
       height: 150px;
       border-radius: 8px;
       background: #f5f5f5;
+
+      .album-cover-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #f093fb 0%, #f5af19 100%);
+        border-radius: 8px;
+        color: rgba(255,255,255,0.9);
+
+        svg {
+          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+      }
     }
 
     .album-name {

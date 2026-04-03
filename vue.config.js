@@ -1,6 +1,5 @@
 const { defineConfig } = require('@vue/cli-service')
 const path = require('path')
-const PrerenderSPAPlugin = require('prerender-spa-plugin')
 
 module.exports = defineConfig({
   transpileDependencies: true,
@@ -41,9 +40,12 @@ module.exports = defineConfig({
       return definitions;
     });
   },
+})
 
-  // SEO 预渲染
-  configureWebpack: {
+// SEO 预渲染 - 只在生产构建时启用
+if (process.env.NODE_ENV === 'production') {
+  const PrerenderSPAPlugin = require('prerender-spa-plugin')
+  module.exports.configureWebpack = {
     plugins: [
       new PrerenderSPAPlugin({
         staticDir: path.join(__dirname, 'dist'),
@@ -54,5 +56,5 @@ module.exports = defineConfig({
         }),
       }),
     ],
-  },
-})
+  }
+}

@@ -3,7 +3,10 @@ import { getBaseURL, get, post, deletes } from "./request";
 const HttpManager = {
   // 获取图片信息
   attachImageUrl: (url) => {
-    if (!url) return "https://cube.elemecdn.com/e/fd/0fc7d20532fdaf769a25683617711png.png";
+    // 如果为空，返回空字符串（由调用方处理默认图）
+    if (!url || url.trim() === "") {
+      return "";
+    }
     // 去掉 \r\n 等空白字符
     const cleanUrl = url.trim();
     // 如果已经是完整 URL，直接返回
@@ -49,6 +52,8 @@ const HttpManager = {
   getSingerOfAreaAndSex: (area, sex) => get(`capi/singer/area/sex/detail?area=${area}&sex=${sex}`),
   // 通过地区、性别和字母筛选歌手
   getSingerByCondition: (area, sex, initial) => get(`capi/singer/condition?area=${area}&sex=${sex}&initial=${initial}`),
+  // 获取歌手专辑列表（简版，不含歌曲）
+  getSingerAlbums: (singerId) => get(`capi/singer/albums?singerId=${singerId}`),
 
   // =======================> 收藏 API 完成
   // 返回的指定用户ID的收藏列表
@@ -93,6 +98,8 @@ const HttpManager = {
   getSongOfSingerId: (id) => get(`capi/song/singer/detail?singerId=${id}`),
   // 返回指定歌手名的歌曲
   getSongOfSingerName: (keywords) => get(`capi/song/singerName/detail?name=${keywords}`),
+  // 获取专辑详情（含歌曲列表）
+  getAlbumDetail: (albumId) => get(`capi/song/album/detail?albumId=${albumId}`),
   // 下载音乐
   downloadMusic: (url) => get(url, { responseType: "blob" }),
 

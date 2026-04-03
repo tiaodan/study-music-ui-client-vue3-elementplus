@@ -40,6 +40,7 @@ import YinIcon from "@/components/layouts/YinIcon.vue";
 import { HttpManager } from "@/api";
 import { formatSeconds } from "@/utils";
 import { Icon } from "@/enums";
+import { setLyricCache } from "@/utils/cache";
 
 const props = defineProps<{
   songList: any[];
@@ -82,10 +83,21 @@ const dataList = computed(() => {
   return list;
 });
 
+// 缓存歌词到 IndexedDB
+async function cacheLyric(songId: number, lyric: string) {
+  if (songId && lyric && lyric.trim() && lyric !== "Field") {
+    await setLyricCache(songId, lyric);
+  }
+}
+
 // 双击播放
-function handleRowDbClick(row: any) {
+async function handleRowDbClick(row: any) {
   // 统一使用 /capi/song/ 前缀
   const playUrl = `/capi/song/${row.id}`;
+
+  // 缓存歌词
+  await cacheLyric(row.id, row.lyric);
+
   store.dispatch("playSingleSong", {
     id: row.id,
     url: playUrl,
@@ -97,9 +109,13 @@ function handleRowDbClick(row: any) {
 }
 
 // 点击播放按钮
-function handlePlay(row: any) {
+async function handlePlay(row: any) {
   // 统一使用 /capi/song/ 前缀
   const playUrl = `/capi/song/${row.id}`;
+
+  // 缓存歌词
+  await cacheLyric(row.id, row.lyric);
+
   store.dispatch("playSingleSong", {
     id: row.id,
     url: playUrl,
@@ -111,7 +127,7 @@ function handlePlay(row: any) {
 }
 
 // 点击添加按钮（添加到播放列表末尾）
-function handleAddToPlaylist(row: any) {
+async function handleAddToPlaylist(row: any) {
   const playUrl = `/capi/song/${row.id}`;
   const currentPlayList = store.getters.currentPlayList;
 
@@ -121,6 +137,9 @@ function handleAddToPlaylist(row: any) {
     ElMessage.info("歌曲已在播放列表中");
     return;
   }
+
+  // 缓存歌词
+  await cacheLyric(row.id, row.lyric);
 
   // 追加到播放列表
   const newSong = {
