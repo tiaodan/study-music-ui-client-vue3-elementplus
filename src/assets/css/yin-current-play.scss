@@ -65,10 +65,11 @@
 
 .menus {
   width: 100%;
-  height: calc(100% - 19px);
+  height: calc(100% - 80px);
   cursor: pointer;
   z-index: 100;
-  overflow: scroll;
+  overflow-y: auto;
+  overflow-x: hidden;
   white-space: nowrap;
   li {
     display: flex;
@@ -88,19 +89,18 @@
     }
 
     .delete-btn {
-      width: 24px;
-      height: 24px;
-      line-height: 22px;
+      width: 28px;
+      height: 28px;
+      line-height: 26px;
       text-align: center;
-      font-size: 16px;
-      color: #666;
+      font-size: 20px;
+      font-weight: bold;
+      color: #bbb;
       cursor: pointer;
-      opacity: 0.5;
       transition: all 0.2s;
 
       &:hover {
         color: #f56c6c;
-        opacity: 1;
       }
     }
 

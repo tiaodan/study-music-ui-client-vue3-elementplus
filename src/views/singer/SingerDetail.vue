@@ -45,7 +45,7 @@
               <div
                 class="album-item"
                 v-for="album in albumList"
-                :key="album.album_id"
+                :key="album.id || album.album_id"
                 @click="handleSelectAlbum(album)"
               >
                 <el-image class="album-cover" fit="contain" :src="attachImageUrl(album.pic)" lazy>
@@ -57,7 +57,7 @@
                   </div>
                 </template>
               </el-image>
-                <div class="album-name">{{ album.album || '未知专辑' }}</div>
+                <div class="album-name">{{ album.title || album.name || album.album || '未知专辑' }}</div>
               </div>
               <el-empty v-if="albumList.length === 0" description="暂无专辑" />
             </div>
@@ -157,11 +157,15 @@ async function handleSelectAlbum(album: any) {
   selectedAlbum.value = album;
   albumDetailLoading.value = true;
 
+  // 兼容多种ID字段名
+  const albumId = album.id || album.album_id;
+
   try {
     // 从缓存或API获取专辑详情
-    const albumDetail = await getAlbumDetail(album.album_id);
+    const albumDetail = await getAlbumDetail(albumId);
     if (albumDetail) {
-      albumSongList.value = albumDetail.songs || [];
+      // API返回的data直接就是歌曲数组
+      albumSongList.value = Array.isArray(albumDetail) ? albumDetail : (albumDetail.songs || []);
     } else {
       albumSongList.value = [];
     }

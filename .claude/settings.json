@@ -4,6 +4,9 @@
       "Bash(npm run:*)",
       "Bash(grep -o \"icon-[a-zA-Z0-9-]*add[a-zA-Z0-9-]*\" src/assets/icons/iconfont*.js)",
       "Bash(npm install:*)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\ancha\\.claude\\projects\\c--A-software-C-wokspace-project-music-study-music-ui-client-vue3-elementplus"
     ]
   }
 }
