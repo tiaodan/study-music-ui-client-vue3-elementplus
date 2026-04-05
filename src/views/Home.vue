@@ -1,8 +1,15 @@
 <template>
   <div class="home-container">
-    <!-- 轮播图广告 -->
+    <!-- 轮播图 -->
     <div class="banner-container">
       <el-carousel height="300px" :interval="5000" arrow="hover" indicator-position="outside">
+        <!-- Native Banner 广告位 -->
+        <el-carousel-item v-if="nativeAdEnabled">
+          <div class="native-ad-banner">
+            <div id="container-33504a55d512c8d06b36725c53f22bd1"></div>
+          </div>
+        </el-carousel-item>
+        <!-- Banner 列表 -->
         <el-carousel-item v-for="(item, index) in bannerList" :key="index">
           <div class="banner-item" @click="handleBannerClick(item)">
             <el-image
@@ -76,6 +83,7 @@ const bannerList = ref<any[]>([
   { pic: '' },
   { pic: '' },
 ]);
+const nativeAdEnabled = ref(false);
 const { changeIndex } = mixin();
 const attachImageUrl = HttpManager.attachImageUrl;
 
@@ -91,8 +99,29 @@ function goSingerDetail(id: number) {
   router.push(`/singer-detail/${id}`);
 }
 
+// 加载 Native Banner 广告脚本
+function loadNativeAd() {
+  const script = document.createElement('script');
+  script.async = true;
+  script.setAttribute('data-cfasync', 'false');
+  script.src = 'https://pl29066002.profitablecpmratenetwork.com/33504a55d512c8d06b36725c53f22bd1/invoke.js';
+  document.body.appendChild(script);
+}
+
 onMounted(async () => {
   changeIndex(NavName.Home);
+
+  // 加载广告配置
+  try {
+    const response = await fetch('/config/ad.config.json');
+    const adConfig = await response.json();
+    if (adConfig.nativeBanner?.enabled) {
+      nativeAdEnabled.value = true;
+      loadNativeAd();
+    }
+  } catch (e) {
+    console.warn('加载广告配置失败:', e);
+  }
 
   // 获取Banner列表
   try {
@@ -141,6 +170,46 @@ onMounted(async () => {
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+
+  // 左右切换按钮更明显
+  :deep(.el-carousel__arrow) {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #333;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+    &:hover {
+      background-color: #fff;
+    }
+  }
+
+  // 底部指示器更明显
+  :deep(.el-carousel__indicators) {
+    .el-carousel__indicator {
+      .el-carousel__button {
+        width: 24px;
+        height: 4px;
+        border-radius: 2px;
+        background-color: rgba(0, 0, 0, 0.3);
+      }
+
+      &.is-active .el-carousel__button {
+        width: 32px;
+        background-color: $color-blue;
+      }
+    }
+  }
+
+  .native-ad-banner {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f5f5;
+  }
 
   .banner-item {
     cursor: pointer;

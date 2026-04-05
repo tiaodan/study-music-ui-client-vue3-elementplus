@@ -43,18 +43,19 @@ module.exports = defineConfig({
 })
 
 // SEO 预渲染 - 只在生产构建时启用
-if (process.env.NODE_ENV === 'production') {
-  const PrerenderSPAPlugin = require('prerender-spa-plugin')
-  module.exports.configureWebpack = {
-    plugins: [
-      new PrerenderSPAPlugin({
-        staticDir: path.join(__dirname, 'dist'),
-        routes: ['/', '/singer', '/search'],
-        renderer: new PrerenderSPAPlugin.PuppeteerRenderer({
-          renderAfterDocumentEvent: 'render-event',
-          headless: true,
-        }),
-      }),
-    ],
-  }
-}
+// 暂时禁用：Puppeteer 预渲染较慢，可能卡住构建
+// if (process.env.NODE_ENV === 'production') {
+//   const PrerenderSPAPlugin = require('prerender-spa-plugin')
+//   module.exports.configureWebpack = {
+//     plugins: [
+//       new PrerenderSPAPlugin({
+//         staticDir: path.join(__dirname, 'dist'),
+//         routes: ['/', '/singer', '/search'],
+//         renderer: new PrerenderSPAPlugin.PuppeteerRenderer({
+//           renderAfterDocumentEvent: 'render-event',
+//           headless: true,
+//         }),
+//       }),
+//     ],
+//   }
+// }

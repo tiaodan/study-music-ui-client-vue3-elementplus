@@ -136,6 +136,13 @@ async function handlePlay(row: any) {
 
 // 点击添加按钮（添加到播放列表末尾）
 async function handleAddToPlaylist(row: any) {
+  // 校验歌曲数据
+  if (!row.id && row.id !== 0) {
+    ElMessage.warning("歌曲数据异常，无法添加");
+    console.warn('[SongList] 歌曲缺少 id:', row);
+    return;
+  }
+
   const playUrl = `/capi/song/${row.id}`;
   const currentPlayList = store.getters.currentPlayList;
 

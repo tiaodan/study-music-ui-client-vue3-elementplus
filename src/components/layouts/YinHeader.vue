@@ -24,7 +24,6 @@ import mixin from "@/mixins/mixin";
 import { HEADERNAVLIST, SIGNLIST, MENULIST, Icon, MUSICNAME, RouterName, NavName } from "@/enums";
 import { HttpManager } from "@/api";
 import { CACHE_CONFIG } from "@/config/cache.config";
-import adConfig from "@/config/ad.config.json";
 
 export default defineComponent({
   components: {
@@ -54,7 +53,7 @@ export default defineComponent({
         routerManager(RouterName.Home, { path: RouterName.Home });
       } else {
         // 广告弹窗逻辑：点击"歌手"时，24小时内只弹1次
-        if (adConfig.enabled && name === NavName.Singer) {
+        if (name === NavName.Singer) {
           tryShowAdPopup();
         }
         changeIndex(name);
@@ -65,8 +64,9 @@ export default defineComponent({
     /**
      * 尝试显示广告弹窗
      * 24小时内只弹1次
+     * 从 /config/ad.config.json 动态加载配置
      */
-    function tryShowAdPopup() {
+    async function tryShowAdPopup() {
       const cacheKey = CACHE_CONFIG.AD_POPUP.key;
       const cached = localStorage.getItem(cacheKey);
 
@@ -79,10 +79,30 @@ export default defineComponent({
         }
       }
 
-      // 弹出广告（新标签页）
-      window.open(adConfig.adurl, '_blank');
-      // 记录弹出时间
-      localStorage.setItem(cacheKey, String(Date.now()));
+      // 从 public/config/ad.config.json 加载配置
+      try {
+        const response = await fetch('/config/ad.config.json');
+        const adConfig = await response.json();
+
+        if (!adConfig.popup?.enabled || !adConfig.popup?.adurl) {
+          return;
+        }
+
+        // 用 <a> 标签模拟点击，后台打开广告页面（不抢焦点）
+        const link = document.createElement('a');
+        link.href = adConfig.popup.adurl;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // 记录弹出时间
+        localStorage.setItem(cacheKey, String(Date.now()));
+      } catch (e) {
+        console.warn('加载广告配置失败:', e);
+      }
     }
 
     function goMenuList(path) {

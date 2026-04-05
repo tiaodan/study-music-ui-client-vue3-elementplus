@@ -3,6 +3,43 @@ import { Icon } from "@/enums";
 // 播放列表最大容量
 const MAX_PLAYLIST_SIZE = 100;
 
+// 日志记录：记录添加歌曲的来源
+function logAddSong(song: any, source: string) {
+  try {
+    const logs = JSON.parse(localStorage.getItem('song_add_logs') || '[]');
+    logs.push({
+      time: new Date().toISOString(),
+      song: {
+        id: song?.id,
+        name: song?.name,
+        url: song?.url,
+      },
+      source,
+      stack: new Error().stack,
+    });
+    // 只保留最近20条日志
+    if (logs.length > 20) logs.shift();
+    localStorage.setItem('song_add_logs', JSON.stringify(logs));
+  } catch (e) {
+    console.error('记录日志失败:', e);
+  }
+}
+
+// 校验歌曲数据完整性
+function validateSong(song: any, source: string): boolean {
+  if (!song) {
+    console.warn(`[${source}] 歌曲数据为空`);
+    logAddSong(song, source);
+    return false;
+  }
+  if (!song.id && song.id !== 0) {
+    console.warn(`[${source}] 歌曲缺少 id:`, song);
+    logAddSong(song, source);
+    return false;
+  }
+  return true;
+}
+
 export default {
   state: {
     /** 音乐信息 */
@@ -112,6 +149,11 @@ export default {
   actions: {
     // 播放整个列表（原有逻辑，用于上一首/下一首切换）
     playMusic: ({ commit }, { id, url, pic, index, songTitle, singerName, lyric, currentSongList }) => {
+      // 校验当前歌曲
+      if (!validateSong({ id }, 'playMusic')) {
+        return;
+      }
+
       commit("setSongId", id);
       commit("setSongUrl", url);
       commit("setSongPic", pic);
@@ -119,10 +161,22 @@ export default {
       commit("setSongTitle", songTitle);
       commit("setSingerName", singerName);
       commit("setLyric", lyric);
-      commit("setCurrentPlayList", currentSongList);
+
+      // 过滤掉无效的歌曲
+      if (currentSongList && Array.isArray(currentSongList)) {
+        const validList = currentSongList.filter(song => validateSong(song, 'playMusic-list'));
+        commit("setCurrentPlayList", validList);
+      } else {
+        commit("setCurrentPlayList", []);
+      }
     },
     // 播放单首歌曲（追加到播放列表）
     playSingleSong: ({ commit, state }, song) => {
+      // 校验歌曲数据
+      if (!validateSong(song, 'playSingleSong')) {
+        return;
+      }
+
       const { id, url, pic, songTitle, singerName, lyric } = song;
 
       // 检查歌曲是否已在播放列表中
@@ -154,6 +208,10 @@ export default {
         name: singerName + "-" + songTitle,
         lyric,
       };
+
+      // 记录日志
+      logAddSong(newSong, 'playSingleSong');
+
       const newList = [...state.currentPlayList, newSong];
       const newIndex = newList.length - 1;
 

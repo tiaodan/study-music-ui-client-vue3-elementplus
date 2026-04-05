@@ -16,7 +16,8 @@
       "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const data=JSON.parse\\(d\\); const album46=data.data.find\\(a=>a.id===46\\); if\\(album46\\) console.log\\('找到专辑ID=46:', JSON.stringify\\(album46, null, 2\\)\\); else console.log\\('没有专辑ID=46，专辑ID列表:', data.data.map\\(a=>a.id\\).join\\(', '\\)\\);}\\)\")",
       "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const data=JSON.parse\\(d\\); const song=data.data[0]; console.log\\('full_name_singer:', song.full_name_singer\\); console.log\\('singer:', song.singer\\);}\\)\")",
       "Bash(curl -s \"http://localhost:9001/capi/song/album/detail?albumId=118\")",
-      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const data=JSON.parse\\(d\\); data.data.forEach\\(s => console.log\\(s.name, '| full_name_singer:', s.full_name_singer, '| singer:', s.singer\\)\\);}\\)\")"
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>{const data=JSON.parse\\(d\\); data.data.forEach\\(s => console.log\\(s.name, '| full_name_singer:', s.full_name_singer, '| singer:', s.singer\\)\\);}\\)\")",
+      "Bash(npm list:*)"
     ],
     "additionalDirectories": [
       "C:\\Users\\ancha\\.claude\\projects\\c--A-software-C-wokspace-project-music-study-music-ui-client-vue3-elementplus"
