@@ -6,6 +6,7 @@
         <!-- Native Banner 广告位 -->
         <el-carousel-item v-if="nativeAdEnabled">
           <div class="native-ad-banner">
+            <!--  adsterra 厂商 - Native Banner -->
             <div id="container-33504a55d512c8d06b36725c53f22bd1"></div>
           </div>
         </el-carousel-item>
@@ -62,7 +63,7 @@ function handleBannerClick(item: any) {
   }
 }
 
-// 加载 Native Banner 广告脚本
+// 加载 Native Banner 广告脚本 - adsterra - Native Banner
 function loadNativeAd() {
   const script = document.createElement('script');
   script.async = true;
