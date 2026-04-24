@@ -21,6 +21,12 @@ const routes: Array<RouteRecordRaw> = [
         meta: { title: "叫爸爸点 - 在线免费音乐播放器" }
       },
       {
+        path: "/recommend",  // 推荐
+        name: "recommend",
+        component: () => import("@/views/recommend/Recommend.vue"),
+        meta: { title: "推荐榜单 - 叫爸爸点" }
+      },
+      {
         path: "/singer",  // 歌手
         name: "singer",
         component: () => import("@/views/singer/Singer.vue"),

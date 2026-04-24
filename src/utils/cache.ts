@@ -418,6 +418,7 @@ export async function getAlbumDetail(albumId: number): Promise<any> {
 /**
  * 获取歌手所有歌曲(带缓存)
  * 接口返回格式：[{album_id, album, songs: [...]}]，需要扁平化
+ * 同时缓存每个专辑的歌曲列表，供专辑tab使用
  */
 export async function getSingerSongs(singerId: number): Promise<any[]> {
   const cacheKey = `${CACHE_CONFIG.SONG_LIST.key}_${singerId}`
@@ -430,6 +431,13 @@ export async function getSingerSongs(singerId: number): Promise<any[]> {
     const flatSongs: any[] = []
     result.data.forEach((albumItem: any) => {
       if (albumItem.songs && Array.isArray(albumItem.songs)) {
+        // 同时缓存专辑详情（供专辑tab使用）
+        const albumId = albumItem.album_id
+        if (albumId) {
+          const albumCacheKey = `${CACHE_CONFIG.ALBUM_DETAIL.key}_${albumId}`
+          setCache(albumCacheKey, albumItem.songs, CACHE_CONFIG.ALBUM_DETAIL.expire)
+        }
+
         albumItem.songs.forEach((song: any) => {
           // 补充专辑信息到每首歌
           flatSongs.push({
@@ -445,4 +453,90 @@ export async function getSingerSongs(singerId: number): Promise<any[]> {
     return flatSongs
   }
   return []
+}
+
+/**
+ * 获取榜单列表(带缓存)
+ * websiteId: 1=qqmusic, 2=kugou, 3=kuwo, 4=netease, 5=migu
+ */
+export async function getRankList(websiteId: number): Promise<any[]> {
+  const cacheKey = `${CACHE_CONFIG.RANK_LIST.key}_${websiteId}`
+  const cached = getCacheWithMeta<any[]>(cacheKey)
+  const config = CACHE_CONFIG.RANK_LIST
+  const refreshCount = config.refreshCount || 20
+
+  if (!cached) {
+    const result = await HttpManager.getRankList(websiteId) as any
+    if (result.success && result.data) {
+      setCacheWithCount(cacheKey, result.data, config.expire, 1)
+      return result.data
+    }
+    return []
+  }
+
+  const now = Date.now()
+  const isExpired = now > cached.expireTime
+  const currentCount = (cached.clickCount || 0) + 1
+  const shouldRefresh = isExpired || currentCount >= refreshCount
+
+  if (shouldRefresh) {
+    setCacheWithCount(cacheKey, cached.data, config.expire, 0)
+    HttpManager.getRankList(websiteId).then((result: any) => {
+      if (result.success && result.data) {
+        setCacheWithCount(cacheKey, result.data, config.expire, 0)
+      }
+    }).catch(e => console.warn('榜单列表后台更新失败:', e))
+  } else {
+    setCacheWithCount(cacheKey, cached.data, config.expire, currentCount)
+  }
+
+  return cached.data
+}
+
+/**
+ * 获取榜单详情(歌曲列表)
+ */
+export async function getRankDetail(websiteId: number, rankName: string): Promise<any[]> {
+  const cacheKey = `${CACHE_CONFIG.RANK_SONGS.key}_${websiteId}_${rankName}`
+  const cached = getCacheWithMeta<any[]>(cacheKey)
+  const config = CACHE_CONFIG.RANK_SONGS
+  const refreshCount = config.refreshCount || 10
+
+  if (!cached) {
+    const result = await HttpManager.getRankDetail(websiteId, rankName) as any
+    if (result.success && result.data) {
+      // 提取 song_detail 信息
+      const songs = result.data.map((item: any) => ({
+        ...item.song_detail,
+        rank_name: item.name,
+        rank_order: item.song_rank_id,
+      }))
+      setCacheWithCount(cacheKey, songs, config.expire, 1)
+      return songs
+    }
+    return []
+  }
+
+  const now = Date.now()
+  const isExpired = now > cached.expireTime
+  const currentCount = (cached.clickCount || 0) + 1
+  const shouldRefresh = isExpired || currentCount >= refreshCount
+
+  if (shouldRefresh) {
+    setCacheWithCount(cacheKey, cached.data, config.expire, 0)
+    HttpManager.getRankDetail(websiteId, rankName).then((result: any) => {
+      if (result.success && result.data) {
+        const songs = result.data.map((item: any) => ({
+          ...item.song_detail,
+          rank_name: item.name,
+          rank_order: item.song_rank_id,
+        }))
+        setCacheWithCount(cacheKey, songs, config.expire, 0)
+      }
+    }).catch(e => console.warn('榜单歌曲后台更新失败:', e))
+  } else {
+    setCacheWithCount(cacheKey, cached.data, config.expire, currentCount)
+  }
+
+  return cached.data
 }

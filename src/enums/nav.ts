@@ -2,6 +2,7 @@ import { RouterName } from "./router-name";
 
 export const enum NavName {
   Home = "首页",
+  Recommend = "推荐",
   SongSheet = "歌单",
   Singer = "歌手",
   Personal = "个人主页",
@@ -16,6 +17,10 @@ export const HEADERNAVLIST = [
   {
     name: NavName.Home,   // 首页
     path: RouterName.Home,
+  },
+  {
+    name: NavName.Recommend, // 推荐
+    path: RouterName.Recommend,
   },
   {
     name: NavName.Singer, // 歌手

@@ -6,9 +6,9 @@
       <div class="filter-section">
         <span class="filter-label">地区：</span>
         <el-radio-group v-model="area" size="small" @change="handleFilterChange">
-          <el-radio-button value="">全部</el-radio-button>
-          <el-radio-button value="内地">内地</el-radio-button>
-          <el-radio-button value="港台">港台</el-radio-button>
+          <el-radio-button label="">全部</el-radio-button>
+          <el-radio-button label="内地">内地</el-radio-button>
+          <el-radio-button label="港台">港台</el-radio-button>
         </el-radio-group>
       </div>
 
@@ -16,10 +16,10 @@
       <div class="filter-section">
         <span class="filter-label">性别：</span>
         <el-radio-group v-model="sex" size="small" @change="handleFilterChange">
-          <el-radio-button value="-1">全部</el-radio-button>
-          <el-radio-button value="1">男</el-radio-button>
-          <el-radio-button value="0">女</el-radio-button>
-          <el-radio-button value="2">组合</el-radio-button>
+          <el-radio-button label="-1">全部</el-radio-button>
+          <el-radio-button label="1">男</el-radio-button>
+          <el-radio-button label="0">女</el-radio-button>
+          <el-radio-button label="2">组合</el-radio-button>
         </el-radio-group>
       </div>
 
@@ -27,11 +27,11 @@
       <div class="filter-section">
         <span class="filter-label">字母：</span>
         <el-radio-group v-model="initial" size="small" @change="handleFilterChange">
-          <el-radio-button value="">全部</el-radio-button>
+          <el-radio-button label="">全部</el-radio-button>
           <el-radio-button
             v-for="letter in letters"
             :key="letter"
-            :value="letter"
+            :label="letter"
           >{{ letter }}</el-radio-button>
         </el-radio-group>
       </div>

@@ -6,15 +6,15 @@ export const CACHE_CONFIG = {
   // 歌手列表缓存
   SINGER_LIST: {
     key: 'cache_singer_list',
-    expire: 1 * 60 * 60 * 1000,  // 1小时过期（缩短，配合计数器）
-    refreshCount: 40,            // 或点击40次更新（先到先触发）
+    expire: 1 * 60 * 60 * 1000,  // 1小时过期
+    refreshCount: 40,            // 点击40次更新
   },
 
   // Banner列表缓存
   BANNER_LIST: {
     key: 'cache_banner_list',
     expire: 6 * 60 * 60 * 1000,  // 6小时过期
-    refreshCount: 100,           // 或点击100次更新（先到先触发）
+    refreshCount: 100,           // 点击100次更新
   },
 
   // 歌手详情缓存
@@ -52,5 +52,19 @@ export const CACHE_CONFIG = {
   AD_POPUP: {
     key: 'cache_ad_popup',
     expire: 24 * 60 * 60 * 1000, // 24小时
+  },
+
+  // 榜单列表缓存
+  RANK_LIST: {
+    key: 'cache_rank_list',
+    expire: 6 * 60 * 60 * 1000,  // 6小时过期
+    refreshCount: 20,            // 点击20次更新
+  },
+
+  // 榜单歌曲缓存
+  RANK_SONGS: {
+    key: 'cache_rank_songs',
+    expire: 1 * 60 * 60 * 1000,  // 1小时过期（榜单歌曲更新较快）
+    refreshCount: 10,            // 点击10次更新
   },
 }

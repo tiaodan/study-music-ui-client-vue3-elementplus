@@ -112,7 +112,13 @@ const HttpManager = {
   insertUserSupport:({commentId,userId}) => post(`capi/userSupport/insert`, {commentId,userId}),
 
   //获取所有的海报
-  getBannerList: () => get("capi/banner/getAllBanner")
+  getBannerList: () => get("capi/banner/getAllBanner"),
+
+  // =======================> 榜单 API
+  // 获取榜单列表（需要传网站ID：1=qqmusic, 2=kugou, 3=kuwo, 4=netease, 5=migu）
+  getRankList: (websiteId) => get(`capi/rank/list?websiteId=${websiteId}`),
+  // 获取榜单详情（歌曲列表）
+  getRankDetail: (websiteId, rankName) => get(`capi/rank/detail?websiteId=${websiteId}&rankName=${rankName}`),
 };
 
 
