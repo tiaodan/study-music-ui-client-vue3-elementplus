@@ -255,8 +255,8 @@ export default defineComponent({
     toPlay() {
       const song = this.currentPlayList[this.currentPlayIndex];
       if (!song) return;
-      // 统一使用 /capi/song/ 前缀
-      const playUrl = `/capi/song/${song.id}`;
+      // 直接使用播放列表中已保存的 url
+      const playUrl = song.url;
       if (playUrl !== this.songUrl) {
         this.playMusic({
           id: song.id,
