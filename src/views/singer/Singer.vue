@@ -38,7 +38,8 @@
 
       <!-- 测试按钮：调用原接口 -->
       <div class="filter-section">
-        <el-button type="primary" @click="handleOriginalApi">测试(原接口)</el-button>
+        <el-button type="primary" disabled>测试（原接口）</el-button>
+        <el-button type="primary" @click="handleJayApi">测试（周杰伦）</el-button>
       </div>
     </div>
 
@@ -135,6 +136,17 @@ async function handleOriginalApi() {
   }
 }
 
+// 测试按钮：调用周杰伦接口
+async function handleJayApi() {
+  try {
+    const result = (await HttpManager.getSingerJay()) as ResponseBody;
+    allPlayList.value = result.data || [];
+    currentPage.value = 1;
+  } catch (error) {
+    console.error("调用周杰伦接口失败:", error);
+  }
+}
+
 // 获取当前页
 function handleCurrentChange(val: number) {
   currentPage.value = val;
@@ -142,7 +154,7 @@ function handleCurrentChange(val: number) {
 
 // 页面加载时获取数据
 onMounted(() => {
-  getSingerList();
+  handleJayApi();
 });
 </script>
 

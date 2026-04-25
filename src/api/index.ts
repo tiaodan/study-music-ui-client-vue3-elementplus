@@ -46,6 +46,8 @@ const HttpManager = {
   // =======================> 歌手 API  完成
   // 返回所有歌手
   getAllSinger: () => get("capi/singer"),
+  // 返回周杰伦歌手信息（临时测试接口）
+  getSingerJay: () => get("capi/singer/jay"),
   // 通过性别对歌手分类
   getSingerOfSex: (sex) => get(`capi/singer/sex/detail?sex=${sex}`),
   // 通过地区和性别对歌手分类
