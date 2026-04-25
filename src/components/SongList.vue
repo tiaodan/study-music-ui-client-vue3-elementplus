@@ -90,17 +90,34 @@ async function cacheLyric(songId: number, lyric: string) {
   }
 }
 
+// 获取歌曲播放URL
+function getPlayUrl(row: any): string {
+  // 排行榜歌曲：有 rank_order 字段（song_rank_id），使用 song-rank 接口
+  if (row.rank_order) {
+    return `/capi/song-rank/${row.rank_order}`;
+  }
+  // 歌手歌曲：直接用后端返回的 url 字段，加前缀
+  const baseUrl = row.url || row.nas_url_path || '';
+  if (baseUrl.startsWith('/song/') || baseUrl.startsWith('song/')) {
+    return `/capi/${baseUrl.startsWith('/') ? baseUrl.slice(1) : baseUrl}`;
+  }
+  // 其他情况（排行榜歌曲等），需要后端提供音频流接口
+  // 暂时返回原URL（可能无法播放）
+  return baseUrl;
+}
+
 // 双击播放
 async function handleRowDbClick(row: any) {
-  // 统一使用 /capi/song/ 前缀
-  const playUrl = `/capi/song/${row.id}`;
+  const playUrl = getPlayUrl(row);
+  // 排行榜歌曲：唯一ID用 rank_order；歌手歌曲：用 id
+  const songId = row.rank_order ? `rank_${row.rank_order}` : row.id;
 
   // 缓存歌词
-  await cacheLyric(row.id, row.lyric);
+  await cacheLyric(row.rank_order || row.id, row.lyric);
 
   try {
     store.dispatch("playSingleSong", {
-      id: row.id,
+      id: songId,
       url: playUrl,
       pic: row.pic,
       songTitle: row.songName,
@@ -114,15 +131,16 @@ async function handleRowDbClick(row: any) {
 
 // 点击播放按钮
 async function handlePlay(row: any) {
-  // 统一使用 /capi/song/ 前缀
-  const playUrl = `/capi/song/${row.id}`;
+  const playUrl = getPlayUrl(row);
+  // 排行榜歌曲：唯一ID用 rank_order；歌手歌曲：用 id
+  const songId = row.rank_order ? `rank_${row.rank_order}` : row.id;
 
   // 缓存歌词
-  await cacheLyric(row.id, row.lyric);
+  await cacheLyric(row.rank_order || row.id, row.lyric);
 
   try {
     store.dispatch("playSingleSong", {
-      id: row.id,
+      id: songId,
       url: playUrl,
       pic: row.pic,
       songTitle: row.songName,
@@ -136,18 +154,26 @@ async function handlePlay(row: any) {
 
 // 点击添加按钮（添加到播放列表末尾）
 async function handleAddToPlaylist(row: any) {
+  // 排行榜歌曲：唯一ID用 rank_order；歌手歌曲：用 id
+  const songId = row.rank_order ? `rank_${row.rank_order}` : row.id;
+  const playUrl = getPlayUrl(row);
+
   // 校验歌曲数据
-  if (!row.id && row.id !== 0) {
+  if (!songId && songId !== 0) {
     ElMessage.warning("歌曲数据异常，无法添加");
     console.warn('[SongList] 歌曲缺少 id:', row);
     return;
   }
 
-  const playUrl = `/capi/song/${row.id}`;
   const currentPlayList = store.getters.currentPlayList;
 
-  // 检查是否已存在
-  const existIndex = currentPlayList.findIndex(item => item.id === row.id);
+  // 检查是否已存在（排行榜歌曲用 rank_ 前缀匹配）
+  const existIndex = currentPlayList.findIndex(item => {
+    if (row.rank_order) {
+      return item.id === `rank_${row.rank_order}`;
+    }
+    return item.id === row.id;
+  });
   if (existIndex !== -1) {
     ElMessage.info("歌曲已在播放列表中");
     return;
@@ -160,11 +186,11 @@ async function handleAddToPlaylist(row: any) {
   }
 
   // 缓存歌词
-  await cacheLyric(row.id, row.lyric);
+  await cacheLyric(row.rank_order || row.id, row.lyric);
 
   // 追加到播放列表
   const newSong = {
-    id: row.id,
+    id: songId,
     url: playUrl,
     pic: row.pic,
     name: row.singerName + "-" + row.songName,

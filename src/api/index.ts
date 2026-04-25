@@ -119,6 +119,8 @@ const HttpManager = {
   getRankList: (websiteId) => get(`capi/rank/list?websiteId=${websiteId}`),
   // 获取榜单详情（歌曲列表）
   getRankDetail: (websiteId, rankName) => get(`capi/rank/detail?websiteId=${websiteId}&rankName=${rankName}`),
+  // 获取排行榜歌曲详情
+  getSongRankDetail: (songRankId) => get(`capi/song-rank/${songRankId}`),
 };
 
 
