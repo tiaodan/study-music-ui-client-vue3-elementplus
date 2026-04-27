@@ -7,7 +7,7 @@
     @canplay="canplay"
     @timeupdate="timeupdate"
     @ended="ended"
-    :loop="playMode === 1"
+    :loop="playMode === 1 || playlistLength === 1"
   >
   </audio>
 </template>
@@ -31,6 +31,8 @@ export default defineComponent({
     const changeTime = computed(() => store.getters.changeTime);
     const autoNext = computed(() => store.getters.autoNext);
     const playMode = computed(() => store.getters.playMode); // 0=列表循环, 1=单曲循环, 2=随机
+    const currentPlayList = computed(() => store.getters.currentPlayList);
+    const playlistLength = computed(() => currentPlayList.value?.length || 0);
 
     // 监听歌曲 URL 变化，开始加载
     watch(songUrl, () => {
@@ -93,6 +95,7 @@ export default defineComponent({
       timeupdate,
       ended,
       playMode,
+      playlistLength,
     };
   },
 });
